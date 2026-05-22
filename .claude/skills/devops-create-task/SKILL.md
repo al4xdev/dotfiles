@@ -1,12 +1,12 @@
 ---
 name: devops-create-task
 description: This skill should be used when the user asks to "criar bug", "criar issue", "criar task", "abrir work item", "criar work item no devops", "azure devops", "az boards", or discusses creating/listing/updating work items in Azure DevOps via CLI. Documents the validated process for the REDACTED_ORG organization (REDACTED_PROJECT project) including PAT auth via fish universal vars, required custom fields, bulk creation pattern, and field discovery.
-version: 1.1.0
+version: 1.2.0
 ---
 
 # Azure DevOps — Criar work items via CLI
 
-Processo validado em 2026-04-29 para criar Bug/Task/Issue na organização **REDACTED_ORG**, projeto **REDACTED_PROJECT**, usando `az` CLI + extensão `azure-devops`.
+Processo validado em 2026-04-30 para criar Bug/Task/Issue na organização **REDACTED_ORG**, projeto **REDACTED_PROJECT**, usando `az` CLI + extensão `azure-devops`.
 
 ## Quando aplicar
 
@@ -211,27 +211,56 @@ echo "OK: $(grep -cv '^FAIL' /tmp/items_results.tsv)  FAIL: $(grep -c '^FAIL' /t
 
 Quando os work items vêm de uma análise (lista de bugs, code smells, refactor TODOs), gere o JSONL via **Python** — escapa HTML/JSON automaticamente, mantém estrutura, e o ReproSteps fica formatado bonito na UI.
 
-### Workflow validado (7 passos)
+### Convenção de type: findings → `Bug`, work items operacionais → `Task`
+
+Validado em 2026-04-30: o ícone do `Bug` no quadro DevOps é visualmente mais distintivo (vermelho/inseto) do que o ícone genérico de `Task`. Quando findings de code review viram work items, **classificar todos como `--type Bug`** independente da gravidade — `[SMELL]` e `[NIT]` ganham o mesmo tratamento de `[BUG]`. A granularidade fica preservada pelo **prefixo do título** (`[BUG]`/`[SMELL]`/`[NIT]`/`[PERF]`), que continua filtrando bem em WIQL e Ctrl+F.
+
+| Tag no título | `--type` no DevOps | Justificativa |
+|---|---|---|
+| `[BUG]` | `Bug` | Bug real |
+| `[SMELL]` | `Bug` | Ícone melhor; tag preserva a classificação |
+| `[NIT]` | `Bug` | Mesma razão |
+| `[PERF]` | `Bug` | Mesma razão |
+| `[TASK]` / `[REFACTOR]` / `[CR]` | `Task` | Trabalho operacional, não finding |
+
+**Mapear em código** — cada item carrega `tag` (display) e `type` (DevOps); o helper deriva `type` de `tag` se não vier explícito:
+
+```python
+TAG_TO_TYPE = {
+    "[BUG]": "Bug", "[SMELL]": "Bug", "[NIT]": "Bug", "[PERF]": "Bug",
+    "[TASK]": "Task", "[REFACTOR]": "Task", "[CR]": "Task",
+}
+```
+
+⚠️ **Type não pode ser alterado depois do create.** `az boards work-item update` não aceita `--type`. Se você criou como `Task` e precisa virar `Bug`, o caminho é **delete (soft) + recreate** com a mesma desc — exemplo na seção "Operações além de criar". Por isso confirme o type **antes** do bulk.
+
+### Workflow validado (8 passos)
 
 1. **Listar findings em conversa** com seções claras (`🐛 Bugs`, `🟡 Smells`) e padrão `título — file:linha` + corpo curto
-2. **Confirmar com o usuário** quais entram como work item, qual `--type`, quanto de `RemainingWork`
-3. **Validar disponibilidade** uma única vez: `fish -c 'echo -n $AZURE_DEVOPS_EXT_PAT'` deve retornar PAT não-vazio
-4. **Gerar JSONL** via script Python (template abaixo)
-5. **Criar 1 sample** primeiro, mostrar URL pro usuário inspecionar
-6. **Aguardar OK** explícito antes do bulk
-7. **Loop bash** para os restantes; salvar IDs em `/tmp/<x>_results.tsv` para rollback fácil
+2. **Mapear tag → type** via tabela acima (findings = Bug, operacionais = Task) — fica embutido no JSONL como campo `type`
+3. **Confirmar com o usuário** quais entram, hours por tag, e quem assigna; reforçar que type **não é alterável** depois do create
+4. **Validar PAT** uma única vez: `fish -c 'echo -n $AZURE_DEVOPS_EXT_PAT'` deve retornar não-vazio
+5. **Gerar JSONL** via script Python (template abaixo) — uma linha por item, com `type`/`title`/`desc`
+6. **Criar 1 sample** primeiro, mostrar URL pro usuário inspecionar
+7. **Aguardar OK** explícito antes do bulk
+8. **Loop bash** para os restantes; salvar IDs em `/tmp/<x>_results.tsv` para rollback fácil
 
 ### Estrutura de cada item no Python
 
 ```python
 {
-    "tag": "[BUG]" | "[SMELL]" | "[REFACTOR]" | "[CR]",
+    "tag": "[BUG]" | "[SMELL]" | "[NIT]" | "[PERF]" | "[TASK]" | "[REFACTOR]" | "[CR]",
+    "type": "Bug" | "Task",                   # derivar de tag via TAG_TO_TYPE (ver convenção acima)
     "title": "descrição curta do problema",   # sem o ref
     "ref": "arquivo.py:linha",                # ou range, ou "vs outro_arquivo.py:linha"
     "code": "snippet relevante" | None,       # vira <pre>...</pre> escapado
     "body_html": "<p>...</p><ul><li>...</li></ul>",  # explicação completa em HTML
 }
 ```
+
+O loop bash do bulk lê `.type` de cada linha do JSONL e:
+- Passa para `--type "$type"`.
+- Anexa `Microsoft.VSTS.TCM.ReproSteps=$desc` em `--fields` **só quando `type == "Bug"`** (Task usa só `System.Description`).
 
 A **data do batch** é única (ver "Política de datas") — passada uma vez para o gerador, não por item:
 
@@ -278,18 +307,58 @@ def html_escape_code(s):  # apenas dentro de <pre>
 import json
 from datetime import date
 
+TAG_TO_TYPE = {
+    "[BUG]": "Bug", "[SMELL]": "Bug", "[NIT]": "Bug", "[PERF]": "Bug",
+    "[TASK]": "Task", "[REFACTOR]": "Task", "[CR]": "Task",
+}
+
 ITEMS = [ {...}, {...}, ... ]  # lista de dicts no schema acima
 BATCH_DATE = date.today().isoformat()  # ou data fornecida pelo usuário
 
 with open("/tmp/items.jsonl", "w", encoding="utf-8") as f:
     for it in ITEMS:
+        item_type = it.get("type") or TAG_TO_TYPE[it["tag"]]
         f.write(json.dumps(
-            {"title": render_title(it), "desc": render_repro(it, BATCH_DATE)},
+            {"type": item_type, "title": render_title(it), "desc": render_repro(it, BATCH_DATE)},
             ensure_ascii=False
         ) + "\n")
 ```
 
-Depois rodar o **loop bash da seção anterior** (que já passa `--description $desc` E `--fields "Microsoft.VSTS.TCM.ReproSteps=$desc"`).
+### Loop bash adaptado para `type` por item
+
+```bash
+export AZURE_DEVOPS_EXT_PAT=$(fish -c 'echo -n $AZURE_DEVOPS_EXT_PAT')
+> /tmp/items_results.tsv
+i=0
+while IFS= read -r line; do
+  i=$((i+1))
+  type=$(printf '%s' "$line" | jq -r '.type')
+  title=$(printf '%s' "$line" | jq -r '.title')
+  desc=$(printf '%s' "$line" | jq -r '.desc')
+
+  fields_args=("Custom.TestingPhase=N/A" "Microsoft.VSTS.Scheduling.RemainingWork=1")
+  # ReproSteps so faz sentido em Bug — Task usa System.Description direto
+  if [ "$type" = "Bug" ]; then
+    fields_args+=("Microsoft.VSTS.TCM.ReproSteps=$desc")
+  fi
+
+  out=$(az boards work-item create \
+    --org https://dev.azure.com/REDACTED_ORG \
+    --project REDACTED_PROJECT \
+    --type "$type" \
+    --title "$title" \
+    --description "$desc" \
+    --assigned-to "REDACTED_EMAIL" \
+    --fields "${fields_args[@]}" \
+    --query "id" -o tsv 2>&1)
+  if [ $? -eq 0 ]; then
+    printf '%s\t%s\n' "$out" "$title" | tee -a /tmp/items_results.tsv
+  else
+    printf 'FAIL[%s]\t%s\t%s\n' "$i" "$title" "$out" | tee -a /tmp/items_results.tsv
+  fi
+done < /tmp/items.jsonl
+echo "OK: $(grep -cv '^FAIL' /tmp/items_results.tsv)  FAIL: $(grep -c '^FAIL' /tmp/items_results.tsv)"
+```
 
 ### Exemplo concreto (item gerado)
 
@@ -305,18 +374,19 @@ Depois rodar o **loop bash da seção anterior** (que já passa `--description $
 
 ## Regras / checklist antes de subir no DevOps
 
-1. ☐ Usuário **confirmou explicitamente** o type, hours, e quem assigna
-2. ☐ PAT visível via `fish -c` (testar antes do loop)
-3. ☐ Para `--type Bug`, **sempre** passar `Microsoft.VSTS.TCM.ReproSteps` além de `--description`
-4. ☐ `Custom.TestingPhase` setado (default `"N/A"` — ou pedir valor ao usuário se contexto exigir)
-5. ☐ **Data** embutida no body: `<b>Data:</b> YYYY-MM-DD` no início — usar a fornecida pelo usuário ou `date '+%Y-%m-%d'` (hoje). Em batch, **mesma data para todas**.
-6. ☐ Se o usuário pediu estado intermediário (`In Progress`/`Active`/`Doing`): criar primeiro, depois `update --state` — nunca via `--fields "System.State=..."` no create.
-7. ☐ Title prefixado com tag `[BUG]`/`[SMELL]`/etc — facilita filtros no quadro
-8. ☐ Title inclui `file:linha` no fim — facilita WIQL e Ctrl+F
-9. ☐ Ref também aparece em `<b>Local:</b>` no body para quem abre o item
-10. ☐ Criar **1 sample** e pedir validação visual antes do bulk (>3 itens)
-11. ☐ IDs salvos em `/tmp/*_results.tsv` para rollback fácil
-12. ☐ Rollback testado: `az boards work-item delete --project ... --yes` (lembrar `--project`)
+1. ☐ Usuário **confirmou explicitamente** o type, hours, e quem assigna — lembrar que **type não é alterável** depois do create (precisa delete + recreate)
+2. ☐ Findings (`[BUG]`/`[SMELL]`/`[NIT]`/`[PERF]`) usam `--type Bug` para ícone visualmente distintivo no quadro; `[TASK]`/`[REFACTOR]`/`[CR]` usam `--type Task`
+3. ☐ PAT visível via `fish -c` (testar antes do loop)
+4. ☐ Para `--type Bug`, **sempre** passar `Microsoft.VSTS.TCM.ReproSteps` além de `--description` (Task usa só `System.Description`)
+5. ☐ `Custom.TestingPhase` setado (default `"N/A"` — ou pedir valor ao usuário se contexto exigir)
+6. ☐ **Data** embutida no body: `<b>Data:</b> YYYY-MM-DD` no início — usar a fornecida pelo usuário ou `date '+%Y-%m-%d'` (hoje). Em batch, **mesma data para todas**.
+7. ☐ Se o usuário pediu estado intermediário (`In Progress`/`Active`/`Doing`): criar primeiro, depois `update --state` — nunca via `--fields "System.State=..."` no create.
+8. ☐ Title prefixado com tag `[BUG]`/`[SMELL]`/etc — facilita filtros no quadro
+9. ☐ Title inclui `file:linha` no fim — facilita WIQL e Ctrl+F
+10. ☐ Ref também aparece em `<b>Local:</b>` no body para quem abre o item
+11. ☐ Criar **1 sample** e pedir validação visual antes do bulk (>3 itens)
+12. ☐ IDs salvos em `/tmp/*_results.tsv` para rollback fácil
+13. ☐ Rollback testado: `az boards work-item delete --project ... --yes` (lembrar `--project`)
 
 ## Comandos de descoberta (úteis quando o template muda)
 
@@ -353,6 +423,35 @@ az boards work-item update --id <id> \
   --state "Active" \
   --fields "Microsoft.VSTS.Scheduling.RemainingWork=2"
 ```
+
+**Trocar type (Task ↔ Bug ↔ User Story)** — `update` não aceita `--type`. Caminho validado: soft-delete + recreate com mesma desc:
+```bash
+export AZURE_DEVOPS_EXT_PAT=$(fish -c 'echo -n $AZURE_DEVOPS_EXT_PAT')
+
+# 1. Capturar desc/title antes de deletar
+old=$(az boards work-item show --id <id> \
+  --org https://dev.azure.com/REDACTED_ORG \
+  --query "{title:fields.\"System.Title\", desc:fields.\"System.Description\"}" -o json)
+title=$(echo "$old" | jq -r '.title')
+desc=$(echo "$old" | jq -r '.desc')
+
+# 2. Soft-delete (recuperável ~30 dias)
+az boards work-item delete --id <id> \
+  --org https://dev.azure.com/REDACTED_ORG \
+  --project REDACTED_PROJECT --yes -o tsv
+
+# 3. Recriar com novo type — adicionar ReproSteps se virar Bug
+az boards work-item create \
+  --org https://dev.azure.com/REDACTED_ORG \
+  --project REDACTED_PROJECT \
+  --type Bug \
+  --title "$title" --description "$desc" \
+  --assigned-to "REDACTED_EMAIL" \
+  --fields "Custom.TestingPhase=N/A" "Microsoft.VSTS.Scheduling.RemainingWork=1" \
+           "Microsoft.VSTS.TCM.ReproSteps=$desc" \
+  --query "id" -o tsv
+```
+⚠️ O ID **muda** após recreate. Atualizar referências externas (links em PRs, comentários, queries).
 
 **Deletar (soft, vai para Recycle Bin — fica recuperável ~30 dias)**:
 ```bash
@@ -397,6 +496,8 @@ az boards query --org https://dev.azure.com/REDACTED_ORG \
 | Bug aparece sem descrição na UI mesmo com `--description` setado | Bug usa `Microsoft.VSTS.TCM.ReproSteps` na UI, não `System.Description` | Adicionar `--fields "Microsoft.VSTS.TCM.ReproSteps=$desc"` |
 | `--project must be specified` no `az boards work-item delete` | Delete exige `--project` (create não exige) | Sempre passar `--project REDACTED_PROJECT --yes` |
 | `The field 'State' contains the value 'In Progress' that is not in the list of supported values` no create | Create só aceita estado inicial do tipo (Task → `To Do`, Bug → `New`) | Criar primeiro, depois `az boards work-item update --id $id --state "In Progress"` |
+| Quero trocar `--type` de um work item já criado | `update` não aceita `--type` (read-only após create) | Soft-delete + recreate com mesma `desc` (ver "Trocar type" em "Operações além de criar"). ID muda. |
+| `[SMELL]`/`[NIT]` criados como `Task` aparecem com ícone genérico no quadro | Convenção do skill: findings = `Bug` (ícone melhor); operacionais = `Task` | Recriar como `Bug` mantendo o prefixo `[SMELL]`/`[NIT]` no título |
 
 ## Boas práticas
 
