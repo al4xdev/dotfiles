@@ -16,11 +16,11 @@ function gen
     switch $method
         case 'image'
             echo "🚀 Launching ComfyUI for Images..."
-            ~/.config/comfyui-scripts/start.sh
+            ~/.config/my_scripts/start.sh
 
         case 'video'
             echo "🎬 Launching ComfyUI for Videos..."
-            ~/.config/comfyui-scripts/start_video.sh
+            ~/.config/my_scripts/start_video.sh
 
         case '*'
             echo "❌ Unknown method: '$method'"

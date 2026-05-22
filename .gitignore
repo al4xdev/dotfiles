@@ -36,9 +36,9 @@
 !/.claude/skills/**
 !/.claude/CLAUDE.md
 
-## ComfyUI Custom Scripts
-!/.config/comfyui-scripts/
-!/.config/comfyui-scripts/**
+## Personal scripts
+!/.config/my_scripts/
+!/.config/my_scripts/**
 
 ## Dotfiles repository files
 !.gitignore
