@@ -40,6 +40,16 @@
 !/.config/my_scripts/
 !/.config/my_scripts/**
 
+## VS Code specific rules (settings, keybindings, prompts only — no extensions/state)
+!/.config/Code/
+/.config/Code/*
+!/.config/Code/User/
+/.config/Code/User/*
+!/.config/Code/User/settings.json
+!/.config/Code/User/keybindings.json
+!/.config/Code/User/prompts/
+!/.config/Code/User/prompts/**
+
 ## Dotfiles repository files
 !.gitignore
 !README.md

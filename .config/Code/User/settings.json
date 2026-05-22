@@ -1,0 +1,174 @@
+{
+    "jupyter.askForKernelRestart": false,
+    "remote.autoForwardPortsSource": "hybrid",
+    "security.workspace.trust.untrustedFiles": "open",
+    "editor.minimap.enabled": false,
+    "workbench.editorAssociations": {
+        "*.copilotmd": "vscode.markdown.preview.editor",
+        "*.csv": "parquet-visualizer.parquetVisualizer",
+        "*.json": "default"
+    },
+    "workbench.activityBar.location": "bottom",
+    "window.menuBarVisibility": "compact",
+    "window.titleBarStyle": "custom",
+    "window.customTitleBarVisibility": "never",
+    "chat.commandCenter.enabled": false,
+    "breadcrumbs.enabled": false,
+    "workbench.editor.editorActionsLocation": "hidden",
+    "terminal.integrated.gpuAcceleration": "auto",
+    "editor.smoothScrolling": true,
+    "editor.fontFamily": "JetBrains Mono, monospace",
+    "workbench.list.smoothScrolling": true,
+    "editor.cursorBlinking": "smooth",
+    "editor.fontLigatures": true,
+    "editor.stickyScroll.enabled": true,
+    "editor.cursorSmoothCaretAnimation": "on",
+    "editor.tokenColorCustomizations": {
+        "textMateRules": [
+            {
+                "scope": [
+                    "string",
+                    "string.quoted",
+                    "string.quoted.double",
+                    "string.quoted.single"
+                ],
+                "settings": {
+                    "foreground": "#FF6F61"  // Vermelho suave para as strings
+                }
+            },
+            {
+                "scope": [
+                    "variable",
+                    "variable.other",
+                    "variable.other.local",
+                    "variable.other.readwrite"
+                ],
+                "settings": {
+                    "foreground": "#32CD32"  // Verde para as variáveis
+                }
+            },
+            {
+                "scope": [
+                    "keyword.control", 
+                    "keyword.control.if",
+                    "keyword.control.else",
+                    "keyword.control.while",
+                    "keyword.control.for",
+                    "keyword.control.try",
+                    "keyword.control.py",
+                    "keyword.declaration.function",
+                    "keyword.declaration.function.python",
+                    "storage.type.function.python"  // Amarelo vintage para palavras-chave de controle e definição de funções
+                ],
+                "settings": {
+                    "foreground": "#FFD700"  // Amarelo vintage para palavras-chave de controle e definição de funções
+                }
+            },
+            {
+                "scope": [
+                    "entity.name.function",
+                    "entity.name.type"
+                ],
+                "settings": {
+                    "foreground": "#8aeef1"  // Verde azulado para nomes de função como nor_query
+                }
+            }
+        ]
+    },
+        "workbench.colorCustomizations": {
+            // Cor do fundo do editor
+            "editor.background": "#1E1E1E", // Fundo escuro para o editor
+            "editorCursor.foreground": "#FF6F61", // Cursor vermelho
+            "editorLineNumber.foreground": "#FFD700", // Números das linhas amarelos
+            "editor.selectionBackground": "#3A3D41", // Seleção de texto visível
+            "editor.lineHighlightBackground": "#2D2D30", // Linha ativa destacada
+            "editorLineNumber.activeForeground": "#FD1500", // Número da linha ativa em vermelho
+    
+            // Cor de fundo da janela principal
+            "workbench.background": "#1E1E1E", // Fundo da janela igual ao editor
+    
+            // Cor do fundo da barra lateral
+            "sideBar.background": "#1E1E1E", // Barra lateral com o mesmo fundo do editor
+    
+            // Cor de fundo da barra de status
+            "statusBar.background": "#2D2D30", // Barra de status com um fundo mais escuro
+    
+            // Cor de fundo do painel de navegação
+            "panel.background": "#1E1E1E", // Painel de navegação com fundo do editor
+    
+            // Cor de fundo das abas ativas e inativas
+            "tab.activeBackground": "#2D2D30", // Aba ativa com fundo mais escuro
+            "tab.inactiveBackground": "#1E1E1E", // Aba inativa com fundo do editor
+    
+            // Barra de título
+            "titleBar.activeBackground": "#1E1E1E", // Barra de título ativa com fundo do editor
+            "titleBar.inactiveBackground": "#2D2D30" // Barra de título inativa
+        },
+        "workbench.colorTheme": "Visual Studio Dark",
+        "git.autofetch": true,
+        "python.analysis.autoImportCompletions": true,
+        "python.analysis.completeFunctionParens": true,
+        "python.analysis.inlayHints.callArgumentNames": "all",
+        "python.analysis.inlayHints.functionReturnTypes": true,
+        "python.analysis.inlayHints.pytestParameters": true,
+        "python.analysis.inlayHints.variableTypes": true,
+        "python.analysis.languageServerMode": "full",
+        "python.analysis.typeCheckingMode": "strict",
+        "workbench.sideBar.location": "right",
+        "editor.renderWhitespace": "none",
+        "python.defaultInterpreterPath": "/bin/python3",
+        "python.analysis.autoFormatStrings": true,
+        "python.analysis.diagnosticSeverityOverrides": {
+            "reportUnknownMemberType": "none",
+            "reportUnknownArgumentType": "none"
+},
+"chat.instructionsFilesLocations": {
+    ".github/instructions": true
+},
+"azureFunctions.showProjectWarning": false,
+"window.commandCenter": false,
+"workbench.layoutControl.enabled": false,
+"window.menuStyle": "custom",
+"python.analysis.extraPaths": [
+    "src",
+    "lib",
+    "resources"
+],
+"redhat.telemetry.enabled": true,
+"chat.useAgentSkills": true,
+"chat.viewSessions.orientation": "stacked",
+"github.copilot.enable": {
+    "*": false,
+    "plaintext": false,
+    "markdown": false,
+    "scminput": false,
+    "python": false
+},
+"chat.tools.terminal.autoApprove": {
+    "git commit": true
+},
+"azureResourceGroups.enableChatStandIn": false,
+"github.copilot.chat.agent.currentEditorContext.enabled": false,
+"github.copilot.chat.backgroundAgent.enabled": false,
+"github.copilot.chat.claudeAgent.enabled": false,
+"github.copilot.chat.cloudAgent.enabled": false,
+"github.copilot.chat.codeGeneration.useInstructionFiles": false,
+"github.copilot.chat.copilotDebugCommand.enabled": false,
+"github.copilot.chat.customInstructionsInSystemMessage": false,
+"github.copilot.chat.newWorkspaceCreation.enabled": false,
+"github.copilot.chat.organizationCustomAgents.enabled": false,
+"github.copilot.chat.organizationInstructions.enabled": false,
+"github.copilot.chat.reviewAgent.enabled": false,
+"github.copilot.chat.reviewSelection.enabled": false,
+"github.copilot.chat.setupTests.enabled": false,
+"github.copilot.chat.summarizeAgentConversationHistory.enabled": false,
+"github.copilot.chat.useProjectTemplates": false,
+"github.copilot.editor.enableCodeActions": false,
+"github.copilot.nextEditSuggestions.allowWhitespaceOnlyChanges": false,
+"github.copilot.nextEditSuggestions.enabled": false,
+"github.copilot.nextEditSuggestions.extendedRange": false,
+"github.copilot.nextEditSuggestions.fixes": false,
+"github.copilot.renameSuggestions.triggerAutomatically": false,
+"chat.extensionUnification.enabled": false,
+
+    }
