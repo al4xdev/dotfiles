@@ -1,14 +1,4 @@
 function gen
-    function _gen_setup_completions
-        echo "🔧 Configuring tab completions for 'gen'..."
-            complete -c gen -f
-            complete -c gen -a image -d 'Launch ComfyUI for image generation'
-            complete -c gen -a video -d 'Launch ComfyUI for video generation'
-            complete -c gen -s h -l help -d 'Show help message'
-        
-            funcsave gen
-    end
-
     if not set -q argv[1]; or contains -- $argv[1] "-h" "--help"
         echo "Usage: gen [method]"
         echo ""
@@ -21,23 +11,19 @@ function gen
         return 0
     end
 
-    if not test -e ~/.config/fish/completions/gen.fish
-        _gen_setup_completions
-    end
+    set -l method $argv[1]
 
-    set -l metodo $argv[1]
-
-    switch $metodo
+    switch $method
         case 'image'
             echo "🚀 Launching ComfyUI for Images..."
-            /home/alex/ComfyUI/start.sh
-            
+            ~/.config/comfyui-scripts/start.sh
+
         case 'video'
             echo "🎬 Launching ComfyUI for Videos..."
-            /home/alex/ComfyUI/start_video.sh
+            ~/.config/comfyui-scripts/start_video.sh
 
         case '*'
-            echo "❌ Unknown method: '$metodo'"
+            echo "❌ Unknown method: '$method'"
             echo "Run 'gen --help' for available options."
             return 1
     end
