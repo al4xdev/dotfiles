@@ -40,7 +40,6 @@
 !/.config/comfyui-scripts/
 !/.config/comfyui-scripts/**
 
-
 ## Dotfiles repository files
 !.gitignore
 !README.md
