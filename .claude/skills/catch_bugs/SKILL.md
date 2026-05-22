@@ -87,6 +87,18 @@ The user will pick a direction, push back, ask deeper questions, or redirect. On
 - **Silent between cases.** After closing a case, do not summarize the session, do not propose next steps, do not offer scheduled follow-ups. Just wait.
 
 
+## Project-specific carve-outs
+
+Some repositories define their own carve-outs (cases where a generic `[SMELL]` is consciously rejected as project convention). **Before tagging a finding**, check if the current repo has a canonical style document:
+
+1. **`AGENTS.md`** at the repo root — convention for agents/LLMs (Cursor, Codex, Claude, Aider). Often points to a `style.MD`.
+2. **`CLAUDE.md`** at the repo root — Claude-specific instructions, usually auto-loaded. Often points to the same `style.MD`.
+3. **`documentation/style.MD`** (or `STYLE.md` at the root) — common location for the canonical style guide.
+
+If any of those exist, **Read them in phase 1** alongside the cited file. They override generic anti-patterns for that repo. The agentic-billing/databricks repo, for example, has a `documentation/style.MD` with carve-outs for data-pipeline code (column key repetition, prefix-based column classification, staged constructor + factory + chained API, no-orchestrator pipeline, inline `_run_hN` handlers).
+
+If no such document exists, fall back to the generic data-pipeline rules: literal column names repeated in selects/joins/groupBys are not smells when occurrences differ in order/composition; centralizing keys that aren't iterated programmatically usually hurts readability more than it helps.
+
 ## Anti-patterns (do not do these)
 
 - Reading only the cited line without surrounding context, then explaining from generic pattern knowledge.
