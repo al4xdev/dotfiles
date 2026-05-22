@@ -1,13 +1,13 @@
-# ~/.gitignore
+## ~/.gitignore
 
-# 1. Ignora absolutamente tudo por padrão
+## Ignore absolutely everything by default
 *
 
-# 2. Abre exceção para as pastas de configuração
+## Allow global configuration folders exception
 !/.config/
 /.config/*
 
-# 3. Regras específicas para o Fish (Incluindo conf.d)
+## Fish specific rules
 !/.config/fish/
 !/.config/fish/config.fish
 !/.config/fish/functions/
@@ -17,9 +17,36 @@
 !/.config/fish/conf.d/
 !/.config/fish/conf.d/**
 
-# 4. Arquivos do próprio repositório de dotfiles
+## Micro specific rules (Everything except buffers)
+!/.config/micro/
+.config/micro/buffers/
+
+## Alacritty specific rules (Everything)
+!/.config/alacritty/
+
+## Loose System and Terminal configurations
+!/.bashrc
+!/.config/starship.toml
+!/.config/mimeapps.list
+
+## Claude CLI specific rules (Only skills and CLAUDE.md)
+!/.claude/
+/.claude/*
+!/.claude/skills/
+!/.claude/skills/**
+!/.claude/CLAUDE.md
+
+## ComfyUI Custom Scripts
+!/.config/comfyui-scripts/
+!/.config/comfyui-scripts/**
+
+
+## Dotfiles repository files
 !.gitignore
 !README.md
 
+## SAFETY LOCKS (Ensure these never go to Git)
 .config/fish/fish_variables
 .config/fish/fish_history
+.claude/settings.json
+.claude/history.jsonl
