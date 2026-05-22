@@ -1,40 +1,40 @@
 # ----------------------------------------------------------------------------
-# Variáveis Globais
+# Global Variables
 # ----------------------------------------------------------------------------
-# Usamos -g (global) e -gx (global export) em vez de -U (universal)
-# para evitar gravações em disco a cada abertura do terminal.
-set -eUM EDITOR
-set -eUM VISUAL
-set -eUM ENVIRONMENT
-set -eUM fish_greeting
-set -eUM fish_color_autosuggestion
+# Using -eU to erase any previously persisted universal variables,
+# avoiding disk writes on every shell startup.
+set -eU EDITOR
+set -eU VISUAL
+set -eU ENVIRONMENT
+set -eU fish_greeting
+set -eU fish_color_autosuggestion
 
 # ----------------------------------------------------------------------------
-# PATH e Ambiente
+# PATH and Environment
 # ----------------------------------------------------------------------------
-# fish_add_path adiciona ao PATH de forma inteligente e sem duplicar
+# fish_add_path adds to PATH idempotently (no duplicates)
 fish_add_path -g ~/.local/bin
 
-if test -f "$HOME/.cargo/env.fish"
-    source "$HOME/.cargo/env.fish"
+if test -f ~/.cargo/env.fish
+    source ~/.cargo/env.fish
 end
 
 # ----------------------------------------------------------------------------
 # Aliases
 # ----------------------------------------------------------------------------
-# Substitui ls pelo eza
-alias ls 'eza -al --color=always --group-directories-first --icons'
-alias la 'eza -a --color=always --group-directories-first --icons'
-alias ll 'eza -l --color=always --group-directories-first --icons'
-alias lt 'eza -aT --color=always --group-directories-first --icons'
-alias l. 'eza -ald --color=always --group-directories-first --icons .*'
-
+# Replace ls with eza
+set -l eza_opts --color=always --group-directories-first --icons
+alias ls "eza -al $eza_opts"
+alias la "eza -a $eza_opts"
+alias ll "eza -l $eza_opts"
+alias lt "eza -aT $eza_opts"
+alias l. "eza -ald $eza_opts .*"
 
 if not test -x /usr/bin/yay; and test -x /usr/bin/paru
     alias yay paru
 end
 
-# Uso comum
+# Common usage
 alias .. 'cd ..'
 alias ... 'cd ../..'
 alias .... 'cd ../../..'
@@ -47,7 +47,6 @@ alias fgrep 'ugrep -F --color=auto'
 alias fixpacman 'sudo rm /var/lib/pacman/db.lck'
 alias gitpkg 'pacman -Q | grep -i "\-git" | wc -l'
 alias grep 'ugrep --color=auto'
-alias grubup 'sudo update-grub'
 alias hw 'hwinfo --short'
 alias ip 'ip -color'
 alias jctl 'journalctl -p 3 -xb'
@@ -55,14 +54,14 @@ alias psmem 'ps auxf | sort -nr -k 4'
 alias psmem10 'ps auxf | sort -nr -k 4 | head -10'
 alias rip 'expac --timefmt="%Y-%m-%d %T" "%l\t%n %v" | sort | tail -200 | nl'
 alias rmpkg 'sudo pacman -Rdd'
-alias tarnow 'tar -acf '
-alias untar 'tar -zxvf '
+alias tarnow 'tar -acf'
+alias untar 'tar -zxvf'
 alias upd /usr/bin/garuda-update
 alias vdir 'vdir --color=auto'
-alias wget 'wget -c '
+alias wget 'wget -c'
 
 # ----------------------------------------------------------------------------
-# Inicialização Interativa
+# Interactive Initialization
 # ----------------------------------------------------------------------------
 if status --is-interactive
     starship init fish | source
