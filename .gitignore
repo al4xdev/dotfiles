@@ -1,0 +1,25 @@
+# ~/.gitignore
+
+# 1. Ignora absolutamente tudo por padrão
+*
+
+# 2. Abre exceção para as pastas de configuração
+!/.config/
+/.config/*
+
+# 3. Regras específicas para o Fish (Incluindo conf.d)
+!/.config/fish/
+!/.config/fish/config.fish
+!/.config/fish/functions/
+!/.config/fish/functions/**
+!/.config/fish/completions/
+!/.config/fish/completions/**
+!/.config/fish/conf.d/
+!/.config/fish/conf.d/**
+
+# 4. Arquivos do próprio repositório de dotfiles
+!.gitignore
+!README.md
+
+.config/fish/fish_variables
+.config/fish/fish_history
