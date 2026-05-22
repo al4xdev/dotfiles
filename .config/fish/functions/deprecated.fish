@@ -1,4 +1,4 @@
-function commits_help
+function deprecated --description "Archive of old helpers, kept as reference"
     echo "Summary of common commit prefixes:"
     echo "- \`fix\`: For bug fixes."
     echo "- \`feat\`: For new features."
