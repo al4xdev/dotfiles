@@ -1,18 +1,24 @@
 # ----------------------------------------------------------------------------
-# Global Variables
+# Global and Local Variables
 # ----------------------------------------------------------------------------
-# Using -eU to erase any previously persisted universal variables,
-# avoiding disk writes on every shell startup.
-set -eU EDITOR
-set -eU VISUAL
-set -eU ENVIRONMENT
-set -eU fish_greeting
-set -eU fish_color_autosuggestion
+# Ranger file manager don't like global EDITOR :P
+set -gx EDITOR micro
+set -gx ENVIRONMENT micro
+alias xdg-open='micro'
+
+if [ "$fish_greeting" != "" ]
+    set -U fish_greeting
+end
+
+if [ "$fish_color_autosuggestion" != '#aaaaaa' ]
+    set -U fish_color_autosuggestion '#aaaaaa'
+end
 
 # ----------------------------------------------------------------------------
 # PATH and Environment
 # ----------------------------------------------------------------------------
 # fish_add_path adds to PATH idempotently (no duplicates)
+
 fish_add_path -g ~/.local/bin
 
 if test -f ~/.cargo/env.fish
