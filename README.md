@@ -48,3 +48,9 @@ There is no automated sync. The repo lives at `~/git/my/dotfiles/` and I
 copy files into `~/.config/` (or wherever they belong) by hand when I want
 changes to take effect on the live shell. Keeping the two paths separate
 on purpose — lets me iterate here without breaking my running terminal.
+
+## copyright
+
+Artwork: You tried to pet the space void
+Artist: Yuumei;
+Source: Image[https://www.yuumeiart.com/].
