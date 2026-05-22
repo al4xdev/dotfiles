@@ -3,6 +3,18 @@
 My personal dotfiles. Public mostly so I can clone them onto a fresh box —
 if anything here is useful to you, help yourself.
 
+## Who I am
+
+Materials engineer, Linux since I was a kid. The kind of person who
+would rather model a failure mode upfront than learn from production
+post-mortems. This repo reflects that — a test suite for *dotfiles*, a
+`.gitignore` that denies by default with explicit safety locks at the
+bottom, and a `CLAUDE.md` that tells coding agents which files they are
+not allowed to touch.
+
+If something here looks over-engineered for personal config, that is the
+point: I do not keep a separate "home mode".
+
 ## What's tracked
 
 The repository sits at `$HOME` and uses a deny-everything `.gitignore` with
