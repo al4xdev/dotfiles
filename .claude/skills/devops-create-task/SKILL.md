@@ -1,12 +1,14 @@
 ---
 name: devops-create-task
-description: This skill should be used when the user asks to "criar bug", "criar issue", "criar task", "abrir work item", "criar work item no devops", "azure devops", "az boards", or discusses creating/listing/updating work items in Azure DevOps via CLI. Documents the validated process for the REDACTED_ORG organization (REDACTED_PROJECT project) including PAT auth via fish universal vars, required custom fields, bulk creation pattern, and field discovery.
-version: 1.2.0
+description: This skill should be used when the user asks to "criar bug", "criar issue", "criar task", "abrir work item", "criar work item no devops", "azure devops", "az boards", or discusses creating/listing/updating work items in Azure DevOps via CLI. Documents the validated process for the configured org/project (read from fish universal vars) including PAT auth, required custom fields, bulk creation pattern, and field discovery.
+version: 2.0.0
 ---
 
 # Azure DevOps — Criar work items via CLI
 
-Processo validado em 2026-04-30 para criar Bug/Task/Issue na organização **REDACTED_ORG**, projeto **REDACTED_PROJECT**, usando `az` CLI + extensão `azure-devops`.
+Processo validado para criar Bug/Task/Issue na organização/projeto configurados, usando `az` CLI + extensão `azure-devops`.
+
+> **Dados sensíveis vivem em variáveis universais do fish, não no skill.** Org, projeto e assignee (e o PAT) não são hardcoded aqui — são lidos do ambiente. Isso permite versionar/publicar o skill sem vazar nome de org, projeto ou e-mail corporativo.
 
 ## Quando aplicar
 
@@ -17,28 +19,36 @@ Processo validado em 2026-04-30 para criar Bug/Task/Issue na organização **RED
 ## Pré-requisitos do ambiente (já configurados no host)
 
 - `az` CLI 2.83+ com extensão `azure-devops` instalada (`az extension list | grep azure-devops`)
-- PAT (Personal Access Token) com escopo **Work Items: Read & Write** salvo como variável universal do fish:
+- **Variáveis universais do fish** com os dados do tenant (definidas uma vez via `set -Ux`):
   ```fish
-  set -Ux AZURE_DEVOPS_EXT_PAT <pat>
+  set -Ux AZURE_DEVOPS_EXT_PAT  <pat>                       # PAT com escopo Work Items: Read & Write
+  set -Ux AZURE_DEVOPS_ORG_URL  https://dev.azure.com/<org> # URL da organização
+  set -Ux AZURE_DEVOPS_PROJECT  <project>                   # nome do projeto
+  set -Ux AZURE_DEVOPS_ASSIGNEE <email>                     # assignee default (--assigned-to)
   ```
-- Para gerar PAT novo: `https://dev.azure.com/REDACTED_ORG/_usersSettings/tokens`
+- Para gerar PAT novo: `$AZURE_DEVOPS_ORG_URL/_usersSettings/tokens`
 
-## ⚠️ Pegadinha de auth (importante)
+## ⚠️ Pegadinha de auth + leitura das vars (importante)
 
-O processo do Claude Code é spawnado **antes** do `set -Ux` do fish ser exportado, então a tool Bash (que é `/bin/bash`, não fish) **não enxerga** `$AZURE_DEVOPS_EXT_PAT` diretamente.
+O processo do Claude Code é spawnado **antes** do `set -Ux` do fish ser exportado, então a tool Bash (que é `/bin/bash`, não fish) **não enxerga** as variáveis universais diretamente.
 
-**Solução**: ler o valor via `fish -c` em cada chamada (fish lê universal vars do disco em tempo real):
+**Solução**: ler cada valor via `fish -c` no começo de todo bloco bash (fish lê universal vars do disco em tempo real):
 
 ```bash
 export AZURE_DEVOPS_EXT_PAT=$(fish -c 'echo -n $AZURE_DEVOPS_EXT_PAT')
+ORG=$(fish -c 'echo -n $AZURE_DEVOPS_ORG_URL')
+PROJECT=$(fish -c 'echo -n $AZURE_DEVOPS_PROJECT')
+ASSIGNEE=$(fish -c 'echo -n $AZURE_DEVOPS_ASSIGNEE')
 ```
 
-Validar que pegou:
+Validar que pegou tudo:
 ```bash
-[ -n "$AZURE_DEVOPS_EXT_PAT" ] && echo "OK len=${#AZURE_DEVOPS_EXT_PAT}" || echo "FAIL"
+for v in AZURE_DEVOPS_EXT_PAT ORG PROJECT ASSIGNEE; do
+  [ -n "${!v}" ] && echo "$v OK" || echo "$v FAIL — rodar set -Ux no fish"
+done
 ```
 
-Conta logada via `az login` interativo do tenant `Innovation Office Gen AI` é tratada como **guest user** pela org DevOps e falha com `TF909091`. Sempre usar PAT.
+Conta logada via `az login` interativo do tenant é tratada como **guest user** pela org DevOps e falha com `TF909091`. Sempre usar PAT.
 
 ## 📅 Política de datas (regra do skill)
 
@@ -59,7 +69,7 @@ Regras:
 
 A data fica pesquisável via WIQL com `[System.Description] CONTAINS '2026-04-29'`.
 
-## Campos obrigatórios do template (projeto REDACTED_PROJECT)
+## Campos obrigatórios do template
 
 | Campo | Reference name | Tipo | Obrigatório | Default sugerido |
 |---|---|---|---|---|
@@ -70,7 +80,7 @@ A data fica pesquisável via WIQL com `[System.Description] CONTAINS '2026-04-29
 Campos opcionais úteis:
 - `Microsoft.VSTS.Scheduling.RemainingWork` — horas (decimal). Use para "X horas estimadas".
 - `Microsoft.VSTS.Scheduling.Effort` — story points (não horas).
-- `--assigned-to "email@dominio"` — funciona com email Accenture.
+- `--assigned-to "$ASSIGNEE"` — funciona com email corporativo.
 
 **Não existe** `Microsoft.VSTS.Scheduling.OriginalEstimate` neste template — não tente usar.
 
@@ -87,7 +97,7 @@ A flag `--description` do `az boards work-item create` mapeia para `System.Descr
 
 **Resultado**: para `--type Bug`, usar apenas `--description "..."` faz o bug aparecer **vazio na UI**, mesmo com `System.Description` preenchido por baixo. Confirma via:
 ```bash
-az boards work-item show --id <id> --org <org> \
+az boards work-item show --id <id> --org "$ORG" \
   --query "{desc:fields.\"System.Description\", repro:fields.\"Microsoft.VSTS.TCM.ReproSteps\"}"
 ```
 
@@ -118,21 +128,21 @@ ERROR: The field 'State' contains the value 'In Progress' that is not in the lis
 
 ```bash
 id=$(az boards work-item create \
-  --org https://dev.azure.com/REDACTED_ORG \
-  --project REDACTED_PROJECT \
+  --org "$ORG" \
+  --project "$PROJECT" \
   --type Task \
   --title "..." \
   --description "..." \
-  --assigned-to "REDACTED_EMAIL" \
+  --assigned-to "$ASSIGNEE" \
   --fields "Custom.TestingPhase=N/A" "Microsoft.VSTS.Scheduling.RemainingWork=2" \
   --query "id" -o tsv)
 
 az boards work-item update --id "$id" \
-  --org https://dev.azure.com/REDACTED_ORG \
+  --org "$ORG" \
   --state "In Progress"
 ```
 
-**Estados válidos por tipo** (descobrir via `az devops invoke --area wit --resource workitemtypes --route-parameters project=... type=... --query "states[].name" -o tsv`):
+**Estados válidos por tipo** (descobrir via `az devops invoke --area wit --resource workitemtypes --route-parameters project=$PROJECT type=... --query "states[].name" -o tsv`):
 
 | Tipo | Estados |
 |---|---|
@@ -147,17 +157,20 @@ az boards work-item update --id "$id" \
 
 ```bash
 export AZURE_DEVOPS_EXT_PAT=$(fish -c 'echo -n $AZURE_DEVOPS_EXT_PAT')
+ORG=$(fish -c 'echo -n $AZURE_DEVOPS_ORG_URL')
+PROJECT=$(fish -c 'echo -n $AZURE_DEVOPS_PROJECT')
+ASSIGNEE=$(fish -c 'echo -n $AZURE_DEVOPS_ASSIGNEE')
 TODAY=$(date '+%Y-%m-%d')   # data default — usar o que o usuário deu, senão hoje
 
 desc="<p><b>Data:</b> ${TODAY}</p><p>Descrição com file:line e contexto.</p>"
 
 az boards work-item create \
-  --org https://dev.azure.com/REDACTED_ORG \
-  --project REDACTED_PROJECT \
+  --org "$ORG" \
+  --project "$PROJECT" \
   --type Bug \
   --title "[BUG] título curto" \
   --description "$desc" \
-  --assigned-to "REDACTED_EMAIL" \
+  --assigned-to "$ASSIGNEE" \
   --fields "Custom.TestingPhase=N/A" "Microsoft.VSTS.Scheduling.RemainingWork=1" \
            "Microsoft.VSTS.TCM.ReproSteps=$desc" \
   --query "{id:id, url:url, state:fields.\"System.State\"}" \
@@ -166,7 +179,7 @@ az boards work-item create \
 
 URL humana resultante:
 ```
-https://dev.azure.com/REDACTED_ORG/REDACTED_PROJECT/_workitems/edit/<id>
+$ORG/$PROJECT/_workitems/edit/<id>
 ```
 
 ## Pattern de criação em lote (recomendado para >3 itens)
@@ -179,6 +192,9 @@ Escrever JSONL → loop bash. Evita problemas de escaping com aspas/acentos/queb
 
 ```bash
 export AZURE_DEVOPS_EXT_PAT=$(fish -c 'echo -n $AZURE_DEVOPS_EXT_PAT')
+ORG=$(fish -c 'echo -n $AZURE_DEVOPS_ORG_URL')
+PROJECT=$(fish -c 'echo -n $AZURE_DEVOPS_PROJECT')
+ASSIGNEE=$(fish -c 'echo -n $AZURE_DEVOPS_ASSIGNEE')
 > /tmp/items_results.tsv
 i=0
 while IFS= read -r line; do
@@ -186,12 +202,12 @@ while IFS= read -r line; do
   title=$(printf '%s' "$line" | jq -r '.title')
   desc=$(printf '%s' "$line" | jq -r '.desc')
   out=$(az boards work-item create \
-    --org https://dev.azure.com/REDACTED_ORG \
-    --project REDACTED_PROJECT \
+    --org "$ORG" \
+    --project "$PROJECT" \
     --type Bug \
     --title "$title" \
     --description "$desc" \
-    --assigned-to "REDACTED_EMAIL" \
+    --assigned-to "$ASSIGNEE" \
     --fields "Custom.TestingPhase=N/A" \
              "Microsoft.VSTS.Scheduling.RemainingWork=1" \
              "Microsoft.VSTS.TCM.ReproSteps=$desc" \
@@ -213,7 +229,7 @@ Quando os work items vêm de uma análise (lista de bugs, code smells, refactor 
 
 ### Convenção de type: findings → `Bug`, work items operacionais → `Task`
 
-Validado em 2026-04-30: o ícone do `Bug` no quadro DevOps é visualmente mais distintivo (vermelho/inseto) do que o ícone genérico de `Task`. Quando findings de code review viram work items, **classificar todos como `--type Bug`** independente da gravidade — `[SMELL]` e `[NIT]` ganham o mesmo tratamento de `[BUG]`. A granularidade fica preservada pelo **prefixo do título** (`[BUG]`/`[SMELL]`/`[NIT]`/`[PERF]`), que continua filtrando bem em WIQL e Ctrl+F.
+Validado: o ícone do `Bug` no quadro DevOps é visualmente mais distintivo (vermelho/inseto) do que o ícone genérico de `Task`. Quando findings de code review viram work items, **classificar todos como `--type Bug`** independente da gravidade — `[SMELL]` e `[NIT]` ganham o mesmo tratamento de `[BUG]`. A granularidade fica preservada pelo **prefixo do título** (`[BUG]`/`[SMELL]`/`[NIT]`/`[PERF]`), que continua filtrando bem em WIQL e Ctrl+F.
 
 | Tag no título | `--type` no DevOps | Justificativa |
 |---|---|---|
@@ -239,7 +255,7 @@ TAG_TO_TYPE = {
 1. **Listar findings em conversa** com seções claras (`🐛 Bugs`, `🟡 Smells`) e padrão `título — file:linha` + corpo curto
 2. **Mapear tag → type** via tabela acima (findings = Bug, operacionais = Task) — fica embutido no JSONL como campo `type`
 3. **Confirmar com o usuário** quais entram, hours por tag, e quem assigna; reforçar que type **não é alterável** depois do create
-4. **Validar PAT** uma única vez: `fish -c 'echo -n $AZURE_DEVOPS_EXT_PAT'` deve retornar não-vazio
+4. **Validar PAT + vars** uma única vez (ver bloco de validação na seção de auth) — todas devem retornar não-vazio
 5. **Gerar JSONL** via script Python (template abaixo) — uma linha por item, com `type`/`title`/`desc`
 6. **Criar 1 sample** primeiro, mostrar URL pro usuário inspecionar
 7. **Aguardar OK** explícito antes do bulk
@@ -328,6 +344,9 @@ with open("/tmp/items.jsonl", "w", encoding="utf-8") as f:
 
 ```bash
 export AZURE_DEVOPS_EXT_PAT=$(fish -c 'echo -n $AZURE_DEVOPS_EXT_PAT')
+ORG=$(fish -c 'echo -n $AZURE_DEVOPS_ORG_URL')
+PROJECT=$(fish -c 'echo -n $AZURE_DEVOPS_PROJECT')
+ASSIGNEE=$(fish -c 'echo -n $AZURE_DEVOPS_ASSIGNEE')
 > /tmp/items_results.tsv
 i=0
 while IFS= read -r line; do
@@ -343,12 +362,12 @@ while IFS= read -r line; do
   fi
 
   out=$(az boards work-item create \
-    --org https://dev.azure.com/REDACTED_ORG \
-    --project REDACTED_PROJECT \
+    --org "$ORG" \
+    --project "$PROJECT" \
     --type "$type" \
     --title "$title" \
     --description "$desc" \
-    --assigned-to "REDACTED_EMAIL" \
+    --assigned-to "$ASSIGNEE" \
     --fields "${fields_args[@]}" \
     --query "id" -o tsv 2>&1)
   if [ $? -eq 0 ]; then
@@ -376,7 +395,7 @@ echo "OK: $(grep -cv '^FAIL' /tmp/items_results.tsv)  FAIL: $(grep -c '^FAIL' /t
 
 1. ☐ Usuário **confirmou explicitamente** o type, hours, e quem assigna — lembrar que **type não é alterável** depois do create (precisa delete + recreate)
 2. ☐ Findings (`[BUG]`/`[SMELL]`/`[NIT]`/`[PERF]`) usam `--type Bug` para ícone visualmente distintivo no quadro; `[TASK]`/`[REFACTOR]`/`[CR]` usam `--type Task`
-3. ☐ PAT visível via `fish -c` (testar antes do loop)
+3. ☐ PAT + vars (`ORG`/`PROJECT`/`ASSIGNEE`) visíveis via `fish -c` (testar antes do loop)
 4. ☐ Para `--type Bug`, **sempre** passar `Microsoft.VSTS.TCM.ReproSteps` além de `--description` (Task usa só `System.Description`)
 5. ☐ `Custom.TestingPhase` setado (default `"N/A"` — ou pedir valor ao usuário se contexto exigir)
 6. ☐ **Data** embutida no body: `<b>Data:</b> YYYY-MM-DD` no início — usar a fornecida pelo usuário ou `date '+%Y-%m-%d'` (hoje). Em batch, **mesma data para todas**.
@@ -386,15 +405,20 @@ echo "OK: $(grep -cv '^FAIL' /tmp/items_results.tsv)  FAIL: $(grep -c '^FAIL' /t
 10. ☐ Ref também aparece em `<b>Local:</b>` no body para quem abre o item
 11. ☐ Criar **1 sample** e pedir validação visual antes do bulk (>3 itens)
 12. ☐ IDs salvos em `/tmp/*_results.tsv` para rollback fácil
-13. ☐ Rollback testado: `az boards work-item delete --project ... --yes` (lembrar `--project`)
+13. ☐ Rollback testado: `az boards work-item delete --project "$PROJECT" --yes` (lembrar `--project`)
 
 ## Comandos de descoberta (úteis quando o template muda)
+
+```bash
+ORG=$(fish -c 'echo -n $AZURE_DEVOPS_ORG_URL')
+PROJECT=$(fish -c 'echo -n $AZURE_DEVOPS_PROJECT')
+```
 
 **Listar campos obrigatórios de um type**:
 ```bash
 az devops invoke --area wit --resource workitemtypes \
-  --route-parameters project=REDACTED_PROJECT type=Bug \
-  --org https://dev.azure.com/REDACTED_ORG \
+  --route-parameters project=$PROJECT type=Bug \
+  --org "$ORG" \
   --query "fields[?alwaysRequired].{name:name, ref:referenceName}" -o json
 ```
 
@@ -402,15 +426,15 @@ az devops invoke --area wit --resource workitemtypes \
 ```bash
 az devops invoke --area wit --resource fields \
   --route-parameters fieldNameOrRefName=Custom.TestingPhase \
-  --org https://dev.azure.com/REDACTED_ORG -o json
+  --org "$ORG" -o json
 ```
 
 **Listar tipos de work item disponíveis**:
 ```bash
 az boards work-item show --help  # mostra estrutura
 az devops invoke --area wit --resource workitemtypes \
-  --route-parameters project=REDACTED_PROJECT \
-  --org https://dev.azure.com/REDACTED_ORG \
+  --route-parameters project=$PROJECT \
+  --org "$ORG" \
   --query "[].name" -o tsv
 ```
 
@@ -419,7 +443,7 @@ az devops invoke --area wit --resource workitemtypes \
 **Atualizar**:
 ```bash
 az boards work-item update --id <id> \
-  --org https://dev.azure.com/REDACTED_ORG \
+  --org "$ORG" \
   --state "Active" \
   --fields "Microsoft.VSTS.Scheduling.RemainingWork=2"
 ```
@@ -427,26 +451,29 @@ az boards work-item update --id <id> \
 **Trocar type (Task ↔ Bug ↔ User Story)** — `update` não aceita `--type`. Caminho validado: soft-delete + recreate com mesma desc:
 ```bash
 export AZURE_DEVOPS_EXT_PAT=$(fish -c 'echo -n $AZURE_DEVOPS_EXT_PAT')
+ORG=$(fish -c 'echo -n $AZURE_DEVOPS_ORG_URL')
+PROJECT=$(fish -c 'echo -n $AZURE_DEVOPS_PROJECT')
+ASSIGNEE=$(fish -c 'echo -n $AZURE_DEVOPS_ASSIGNEE')
 
 # 1. Capturar desc/title antes de deletar
 old=$(az boards work-item show --id <id> \
-  --org https://dev.azure.com/REDACTED_ORG \
+  --org "$ORG" \
   --query "{title:fields.\"System.Title\", desc:fields.\"System.Description\"}" -o json)
 title=$(echo "$old" | jq -r '.title')
 desc=$(echo "$old" | jq -r '.desc')
 
 # 2. Soft-delete (recuperável ~30 dias)
 az boards work-item delete --id <id> \
-  --org https://dev.azure.com/REDACTED_ORG \
-  --project REDACTED_PROJECT --yes -o tsv
+  --org "$ORG" \
+  --project "$PROJECT" --yes -o tsv
 
 # 3. Recriar com novo type — adicionar ReproSteps se virar Bug
 az boards work-item create \
-  --org https://dev.azure.com/REDACTED_ORG \
-  --project REDACTED_PROJECT \
+  --org "$ORG" \
+  --project "$PROJECT" \
   --type Bug \
   --title "$title" --description "$desc" \
-  --assigned-to "REDACTED_EMAIL" \
+  --assigned-to "$ASSIGNEE" \
   --fields "Custom.TestingPhase=N/A" "Microsoft.VSTS.Scheduling.RemainingWork=1" \
            "Microsoft.VSTS.TCM.ReproSteps=$desc" \
   --query "id" -o tsv
@@ -456,8 +483,8 @@ az boards work-item create \
 **Deletar (soft, vai para Recycle Bin — fica recuperável ~30 dias)**:
 ```bash
 az boards work-item delete --id <id> \
-  --org https://dev.azure.com/REDACTED_ORG \
-  --project REDACTED_PROJECT \
+  --org "$ORG" \
+  --project "$PROJECT" \
   --yes
 ```
 ⚠️ `--project` é **obrigatório** no delete (mensagem de erro `--project must be specified` se faltar). `--yes` pula confirmação interativa.
@@ -465,24 +492,28 @@ az boards work-item delete --id <id> \
 **Deletar permanente** (`--destroy` requer permissão elevada):
 ```bash
 az boards work-item delete --id <id> --destroy \
-  --org https://dev.azure.com/REDACTED_ORG \
-  --project REDACTED_PROJECT --yes
+  --org "$ORG" \
+  --project "$PROJECT" --yes
 ```
 
 **Bulk delete** (a partir de TSV `id\ttitle`):
 ```bash
 export AZURE_DEVOPS_EXT_PAT=$(fish -c 'echo -n $AZURE_DEVOPS_EXT_PAT')
+ORG=$(fish -c 'echo -n $AZURE_DEVOPS_ORG_URL')
+PROJECT=$(fish -c 'echo -n $AZURE_DEVOPS_PROJECT')
 for id in $(awk -F'\t' '{print $2}' /tmp/items_results.tsv | sort -n); do
   az boards work-item delete --id "$id" \
-    --org https://dev.azure.com/REDACTED_ORG \
-    --project REDACTED_PROJECT --yes -o tsv
+    --org "$ORG" \
+    --project "$PROJECT" --yes -o tsv
 done
 ```
 
 **Buscar work items atribuídos**:
 ```bash
-az boards query --org https://dev.azure.com/REDACTED_ORG \
-  --wiql "SELECT [System.Id], [System.Title], [System.State] FROM WorkItems WHERE [System.AssignedTo] = @Me AND [System.TeamProject] = 'REDACTED_PROJECT'"
+ORG=$(fish -c 'echo -n $AZURE_DEVOPS_ORG_URL')
+PROJECT=$(fish -c 'echo -n $AZURE_DEVOPS_PROJECT')
+az boards query --org "$ORG" \
+  --wiql "SELECT [System.Id], [System.Title], [System.State] FROM WorkItems WHERE [System.AssignedTo] = @Me AND [System.TeamProject] = '$PROJECT'"
 ```
 
 ## Erros comuns e como tratar
@@ -494,22 +525,24 @@ az boards query --org https://dev.azure.com/REDACTED_ORG \
 | `TF401347: Field is read-only` | Tentativa de atualizar campo system computado | Remover do update |
 | Auth funciona via `fish -c` mas falha em outro contexto | Universal var só nas sessões fish | Persistente; se quebrar, `set -Ux` de novo |
 | Bug aparece sem descrição na UI mesmo com `--description` setado | Bug usa `Microsoft.VSTS.TCM.ReproSteps` na UI, não `System.Description` | Adicionar `--fields "Microsoft.VSTS.TCM.ReproSteps=$desc"` |
-| `--project must be specified` no `az boards work-item delete` | Delete exige `--project` (create não exige) | Sempre passar `--project REDACTED_PROJECT --yes` |
+| `--project must be specified` no `az boards work-item delete` | Delete exige `--project` (create não exige) | Sempre passar `--project "$PROJECT" --yes` |
 | `The field 'State' contains the value 'In Progress' that is not in the list of supported values` no create | Create só aceita estado inicial do tipo (Task → `To Do`, Bug → `New`) | Criar primeiro, depois `az boards work-item update --id $id --state "In Progress"` |
 | Quero trocar `--type` de um work item já criado | `update` não aceita `--type` (read-only após create) | Soft-delete + recreate com mesma `desc` (ver "Trocar type" em "Operações além de criar"). ID muda. |
 | `[SMELL]`/`[NIT]` criados como `Task` aparecem com ícone genérico no quadro | Convenção do skill: findings = `Bug` (ícone melhor); operacionais = `Task` | Recriar como `Bug` mantendo o prefixo `[SMELL]`/`[NIT]` no título |
+| Alguma var (`ORG`/`PROJECT`/`ASSIGNEE`) vem vazia | `set -Ux` não rodado, ou nome errado | Rodar o bloco de validação na seção de auth; redefinir via `set -Ux` no fish |
 
 ## Boas práticas
 
 1. **Sempre confirmar com o usuário** antes de criar em lote (>3 work items) — ação visível para outros.
 2. **Salvar resultado** (`/tmp/*_results.tsv`) — facilita rollback se precisar deletar em massa.
 3. **Prefixar título** com tag (`[BUG]`, `[SMELL]`, `[TASK]`, `[CR]`) ajuda filtros/queries.
-4. **Não commitar PAT** — `.gitignore` deve cobrir; nunca colar em código.
+4. **Não commitar segredos** — PAT, org, projeto e e-mail vivem em variáveis universais do fish, nunca hardcoded no skill ou no código.
 5. **Cuidado com 1h estimada como default** — confirmar com usuário antes de assumir; itens grandes precisam decompor.
 
 ## Referências
 
-- Org URL: `https://dev.azure.com/REDACTED_ORG`
-- Projeto principal: `REDACTED_PROJECT`
-- Tokens: `https://dev.azure.com/REDACTED_ORG/_usersSettings/tokens`
+- Org URL: variável `$AZURE_DEVOPS_ORG_URL`
+- Projeto: variável `$AZURE_DEVOPS_PROJECT`
+- Assignee: variável `$AZURE_DEVOPS_ASSIGNEE`
+- Tokens: `$AZURE_DEVOPS_ORG_URL/_usersSettings/tokens`
 - Docs CLI: `https://learn.microsoft.com/cli/azure/boards/work-item`
