@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Keyring unlock (login)
+Comment=Updates an item in the login keyring at login -> forces the password prompt (fingerprint login)
+Exec=sh -c "exec ~/.config/my_scripts/keyring-unlock-startup.sh"
+X-GNOME-Autostart-enabled=true
+NoDisplay=true
+Terminal=false

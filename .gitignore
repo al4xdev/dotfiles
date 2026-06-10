@@ -40,6 +40,11 @@
 !/.config/my_scripts/
 !/.config/my_scripts/**
 
+## Autostart (only the keyring-unlock entry)
+!/.config/autostart/
+/.config/autostart/*
+!/.config/autostart/keyring-unlock-startup.desktop
+
 ## VS Code specific rules (settings, keybindings, prompts only — no extensions/state)
 !/.config/Code/
 /.config/Code/*
@@ -59,3 +64,5 @@
 .config/fish/fish_history
 .claude/settings.json
 .claude/history.jsonl
+.config/my_scripts/.keyring-unlock.log
+.config/my_scripts/__pycache__/
