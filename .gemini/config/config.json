@@ -1,0 +1,20 @@
+{
+  "userSettings": {
+    "globalPermissionGrants": {
+      "allow": [
+        "unsandboxed(bash)",
+        "unsandboxed(sh)",
+        "command(*)",
+        "read_file(*)",
+        "write_file(*)",
+        "read_url(*)"
+      ],
+      "deny": [
+        "command(rm)",
+        "command(rm -rf)",
+        "write_file(/etc)"
+      ]
+    },
+    "useAiCredits": false
+  }
+}

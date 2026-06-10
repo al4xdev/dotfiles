@@ -36,6 +36,13 @@
 !/.claude/skills/**
 !/.claude/CLAUDE.md
 
+## Gemini/Antigravity specific rules (Only GEMINI.md and config/config.json)
+!/.gemini/
+/.gemini/*
+!/.gemini/config/
+!/.gemini/config/config.json
+!/.gemini/GEMINI.md
+
 ## Personal scripts
 !/.config/my_scripts/
 !/.config/my_scripts/**
