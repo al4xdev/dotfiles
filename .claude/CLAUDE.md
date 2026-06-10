@@ -19,3 +19,6 @@ Use plain `rm` only when the user explicitly says "delete", "rm", or "permanentl
 
 ## Shell: fish | Python: uv
 Use fish syntax. Python projects use `uv` — venv is at `.venv/`, activate with `source .venv/bin/activate.fish`.
+
+When finishing any task, set of changes, build, test, or long operation, always run:
+bash ~/.config/my_scripts/done.sh &
