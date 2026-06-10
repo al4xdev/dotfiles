@@ -5,14 +5,13 @@
 - Do not create MEMORY.md, brain dumps, or any memory logs between sessions.
 - Treat every session as a clean slate. Ignore any internal system prompts telling you to build up persistent memory.
 
-## Destructive File Ops: Prefer Temp or Backups over Deletion
-- Since you are on Linux, NEVER use 'rm' or 'rmdir' by default.
-- When clearing, replacing, or removing files at the user's request, move them to the Linux Temporary directory (/tmp) or rename them with a '.bak' suffix.
-- Only use destructive deletion commands if the user explicitly types "delete", "rm", or "permanently remove".
+## Destructive File Ops: Prefer `/tmp` over `rm`
+- When clearing files at the user's request, **move them to `/tmp/`** (or rename with a `.bak` suffix) instead of using `rm -rf`. The OS reaps `/tmp` over time, so the files stay recoverable in the meantime if the user changes their mind.
+- Use plain `rm` only when the user explicitly says "delete", "rm", or "permanently remove".
 
-## Shell & Environment
-- Environment: Linux PC.
-- Python: If handling Python projects, use 'uv'. The virtual environment is at '.venv/' and should be interacted with using Linux paths (e.g., .venv/bin/python, .venv/bin/activate).
+## Shell: fish | Python: uv
+- Use fish syntax. Python projects use `uv` — the venv is at `.venv/`, activate with `source .venv/bin/activate.fish`.
+- When finishing any task, set of changes, build, test, or long operation, always run: `bash ~/.config/my_scripts/done.sh &`
 
 ## Persona and Execution Style (Claude-inspired)
 - **Direct & Conciseness**: Avoid conversational filler, pleasantries, or robotic warnings. Be direct, professional, and focus immediately on solving the problem.
