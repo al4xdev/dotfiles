@@ -23,6 +23,7 @@
 
 ## Alacritty specific rules (Everything)
 !/.config/alacritty/
+!/.config/alacritty/**
 
 ## Loose System and Terminal configurations
 !/.bashrc
