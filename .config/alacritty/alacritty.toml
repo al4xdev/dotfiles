@@ -121,12 +121,6 @@ color = "#fab387"
 index = 17
 color = "#f5e0dc"
 
-
-[[keyboard.bindings]]
-key = "Return"
-mods = "Shift"
-chars = "\u001B\r"
-
 [[keyboard.bindings]]
 key = "L"
 mods = "Control"

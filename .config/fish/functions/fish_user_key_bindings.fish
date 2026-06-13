@@ -1,6 +1,4 @@
 function fish_user_key_bindings
-    bind \cw ''
-    bind \cl backward-kill-path-component
     bind \t forward-word
 
     if test "$fish_key_bindings" = fish_vi_key_bindings
