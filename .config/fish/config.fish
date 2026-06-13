@@ -78,3 +78,7 @@ end
 
 
 
+
+
+# Added by Antigravity CLI installer
+set -gx PATH "/home/alex/.local/bin" $PATH

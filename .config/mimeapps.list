@@ -105,3 +105,4 @@ image/x-xwindowdump=org.gnome.Loupe.desktop
 text/plain=dev.zed.Zed.desktop
 x-scheme-handler/terminal=Alacritty.desktop
 x-scheme-handler/claude-cli=claude-code-url-handler.desktop
+x-scheme-handler/antigravity=antigravity.desktop

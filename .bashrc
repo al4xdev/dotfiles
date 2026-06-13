@@ -54,3 +54,7 @@ fi
 if [ -d "$HOME/.local/bin" ]; then
     export PATH="$HOME/.local/bin:$PATH"
 fi
+
+
+# Added by Antigravity CLI installer
+export PATH="/home/alex/.local/bin:$PATH"
