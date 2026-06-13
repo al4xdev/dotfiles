@@ -170,5 +170,6 @@
 "github.copilot.nextEditSuggestions.fixes": false,
 "github.copilot.renameSuggestions.triggerAutomatically": false,
 "chat.extensionUnification.enabled": false,
+"chat.disableAIFeatures": true,
 
     }
