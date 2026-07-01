@@ -42,7 +42,7 @@
 /.gemini/*
 !/.gemini/config/
 !/.gemini/config/config.json
-!/.gemini/GEMINI.md
+!/.gemini/config/AGENTS.md
 
 ## Personal scripts
 !/.config/my_scripts/

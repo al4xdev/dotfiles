@@ -65,6 +65,7 @@ alias untar 'tar -zxvf'
 alias upd /usr/bin/garuda-update
 alias vdir 'vdir --color=auto'
 alias wget 'wget -c'
+alias dp 'deepcode'
 
 # ----------------------------------------------------------------------------
 # Interactive Initialization
