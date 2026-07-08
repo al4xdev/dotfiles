@@ -20,6 +20,7 @@ end
 # fish_add_path adds to PATH idempotently (no duplicates)
 
 fish_add_path -g ~/.local/bin
+fish_add_path -g ~/git/my/google-cloud-sdk/bin
 
 if test -f ~/.cargo/env.fish
     source ~/.cargo/env.fish
