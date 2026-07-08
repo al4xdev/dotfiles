@@ -66,7 +66,13 @@ alias untar 'tar -zxvf'
 alias upd /usr/bin/garuda-update
 alias vdir 'vdir --color=auto'
 alias wget 'wget -c'
-alias dp 'deepcode'
+
+# ----------------------------------------------------------------------------
+# Abbreviations
+# ----------------------------------------------------------------------------
+# fish >= 3.6 no longer persists `abbr -a` via universal vars — must live here
+abbr -a gw glow
+abbr -a dp deepcode
 
 # ----------------------------------------------------------------------------
 # Interactive Initialization
