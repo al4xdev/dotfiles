@@ -140,6 +140,87 @@ _assert_contains "deprecated prints commit prefix summary" "commit prefixes" \
 
 # ---------------------------------------------------------------------------
 echo ""
+echo "=== deepcode functions & abbreviations ==="
+
+# 1. Test deepcode abbreviations expansion
+set -l abbr_show (abbr --show | string collect)
+for abb in gmmax gmno gmmed gmlow gmun
+    if abbr -q $abb
+        _ok "abbreviation $abb is defined"
+    else
+        _bad "abbreviation $abb is NOT defined"
+    end
+end
+
+_assert_contains "gmmax uses llama-server" "llama-server" "$abbr_show"
+_assert_contains "gmmax has temperature top_p top_k samplers" "temperature;top_p;top_k" "$abbr_show"
+_assert_contains "gmno has reasoning off" "--reasoning off" "$abbr_show"
+_assert_contains "gmmed has mmproj GGUF" "mmproj-F16.gguf" "$abbr_show"
+_assert_contains "gmlow has reasoning off and fit-ctx 4096" "--fit-ctx 4096" "$abbr_show"
+_assert_contains "gmun has uncensored fast v2 Q4_K_M GGUF" "supergemma4-26b-uncensored-fast-v2-Q4_K_M.gguf" "$abbr_show"
+
+# Mock deepcode function to check what it was called with and the env variables
+function deepcode
+    set -g _deepcode_called 1
+    set -g _deepcode_argv $argv
+    set -g _deepcode_model $DEEPCODE_MODEL
+    set -g _deepcode_base_url $DEEPCODE_BASE_URL
+    set -g _deepcode_api_key $DEEPCODE_API_KEY
+end
+
+# 2. Test deepcode-cloud
+source $fish_dir/functions/deepcode-cloud.fish
+if functions -q deepcode-cloud
+    _ok "deepcode-cloud function loaded"
+else
+    _bad "deepcode-cloud function not found"
+end
+
+set -g _deepcode_called 0
+set -g _deepcode_argv
+set -e DEEPCODE_MODEL
+set -e DEEPCODE_BASE_URL
+set -e DEEPCODE_API_KEY
+
+deepcode-cloud cloud_arg1 cloud_arg2
+
+_assert_status "deepcode-cloud runs deepcode mock" 1 "$_deepcode_called"
+_assert_status "deepcode-cloud passes args" "cloud_arg1 cloud_arg2" "$_deepcode_argv"
+_assert_status "deepcode-cloud sets DEEPCODE_MODEL" "deepseek-v4-pro" "$_deepcode_model"
+_assert_status "deepcode-cloud sets DEEPCODE_BASE_URL" "https://api.deepseek.com" "$_deepcode_base_url"
+
+# 3. Test deepcode-local
+source $fish_dir/functions/deepcode-local.fish
+if functions -q deepcode-local
+    _ok "deepcode-local function loaded"
+else
+    _bad "deepcode-local function not found"
+end
+
+set -g _deepcode_called 0
+set -g _deepcode_argv
+set -e DEEPCODE_MODEL
+set -e DEEPCODE_BASE_URL
+set -e DEEPCODE_API_KEY
+
+deepcode-local local_arg1
+
+_assert_status "deepcode-local runs deepcode mock" 1 "$_deepcode_called"
+_assert_status "deepcode-local passes args" "local_arg1" "$_deepcode_argv"
+_assert_status "deepcode-local sets DEEPCODE_MODEL" "unsloth/Qwen-AgentWorld-35B-A3B-GGUF" "$_deepcode_model"
+_assert_status "deepcode-local sets DEEPCODE_BASE_URL" "http://localhost:8888/v1" "$_deepcode_base_url"
+_assert_status "deepcode-local sets DEEPCODE_API_KEY" "sk-unsloth-828bbc10b07eb9f75f6d9d645bdd5d94" "$_deepcode_api_key"
+
+# Clean up mock
+functions -e deepcode
+set -e _deepcode_called
+set -e _deepcode_argv
+set -e _deepcode_model
+set -e _deepcode_base_url
+set -e _deepcode_api_key
+
+# ---------------------------------------------------------------------------
+echo ""
 echo "=== my_scripts ==="
 
 for script in $scripts_dir/start.sh $scripts_dir/start_video.sh
