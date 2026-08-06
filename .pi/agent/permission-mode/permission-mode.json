@@ -1,0 +1,20 @@
+{
+  "modes": {
+    "default": {
+      "permission": {
+        "skill": {
+          "*": "ask",
+          "pi-subagents": "allow"
+        }
+      }
+    },
+    "plan": {
+      "permission": {
+        "tool": {
+          "*": "ask",
+          "questionnaire": "allow"
+        }
+      }
+    }
+  }
+}

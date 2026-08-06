@@ -1,0 +1,13 @@
+{
+  "app.thinking.cycle": ["alt+t"],
+  "app.session.rename": [],
+  "tui.editor.deleteCharForward": ["delete"],
+  "app.exit": [],
+  "app.session.delete": [],
+  "app.tree.filter.default": [],
+  "app.thinking.toggle": ["ctrl+t"],
+  "app.editor.external": [],
+  "app.model.cycleForward": [],
+  "app.model.cycleBackward": [],
+  "app.model.select": []
+}

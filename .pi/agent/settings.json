@@ -1,0 +1,28 @@
+{
+  "lastChangelogVersion": "0.83.0",
+  "theme": "catppuccin-mocha",
+  "hideThinkingBlock": true,
+  "defaultProvider": "deepseek",
+  "defaultModel": "deepseek-v4-pro",
+  "packages": [
+    "npm:pi-subagents",
+    "npm:pi-mcp-adapter",
+    "npm:pi-btw",
+    "npm:@spences10/pi-themes",
+    "npm:pi-permission-modes",
+    "npm:pi-rewind-hook",
+    "npm:pi-custom-compaction",
+    "npm:pi-web-access",
+    "npm:remote-pi"
+  ],
+  "showCacheMissNotices": true,
+  "defaultThinkingLevel": "medium",
+  "rewind": {
+    "silentCheckpoints": true,
+    "retention": {
+      "maxSnapshots": 2000,
+      "maxAgeDays": 30,
+      "pinLabeledEntries": true
+    }
+  }
+}
