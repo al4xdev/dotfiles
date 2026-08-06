@@ -25,6 +25,10 @@
 !/.config/alacritty/
 !/.config/alacritty/**
 
+## Kitty specific rules (Everything)
+!/.config/kitty/
+!/.config/kitty/**
+
 ## Loose System and Terminal configurations
 !/.bashrc
 !/.config/starship.toml
@@ -44,6 +48,26 @@
 !/.gemini/config/config.json
 !/.gemini/config/AGENTS.md
 
+## Pi coding agent specific rules
+!/.pi/
+/.pi/*
+!/.pi/agent/
+/.pi/agent/*
+!/.pi/agent/AGENTS.md
+!/.pi/agent/settings.json
+!/.pi/agent/keybindings.json
+!/.pi/agent/grammar-fix.json
+!/.pi/agent/trust.json
+!/.pi/agent/mcp.json
+!/.pi/agent/extensions/
+!/.pi/agent/extensions/grammar-fix.ts
+!/.pi/agent/extensions/interactive-shell.ts
+!/.pi/agent/extensions/questionnaire.ts
+!/.pi/agent/extensions/rename.ts
+!/.pi/agent/extensions/structured-output.ts
+!/.pi/agent/permission-mode/
+!/.pi/agent/permission-mode/permission-mode.json
+
 ## Personal scripts
 !/.config/my_scripts/
 !/.config/my_scripts/**
@@ -61,6 +85,9 @@
 ## Dotfiles repository files
 !.gitignore
 !README.md
+
+## Explicitly ignored (models.json has API keys)
+.pi/agent/models.json
 
 ## SAFETY LOCKS (Ensure these never go to Git)
 .config/fish/fish_variables
