@@ -1,5 +1,10 @@
 {
   "userSettings": {
+    "customThemeSeedsLight": {
+      "background": "#EAECF0",
+      "foregroundOverride": "#4C4F69",
+      "primary": "#8839EF"
+    },
     "globalPermissionGrants": {
       "allow": [
         "unsandboxed(bash)",
@@ -8,7 +13,10 @@
         "read_file(*)",
         "write_file(*)",
         "read_url(*)",
-        "mcp(*)"
+        "mcp(*)",
+        "execute_url(127.0.0.1)",
+        "execute_url(localhost)",
+        "execute_url(file:///home/alex/git/my/bey_a/index.html)"
       ],
       "deny": [
         "command(rm)",
@@ -17,6 +25,7 @@
       ]
     },
     "remoteControlHostname": "alex-arc-desktop-polar-photon",
+    "themeMode": "THEME_MODE_DARK",
     "useAiCredits": false
   }
 }
