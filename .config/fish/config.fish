@@ -19,6 +19,7 @@ end
 # ----------------------------------------------------------------------------
 # fish_add_path adds to PATH idempotently (no duplicates)
 
+fish_add_path -g ~/.config/my_scripts
 fish_add_path -g ~/.local/bin
 fish_add_path -g ~/git/my/google-cloud-sdk/bin
 
