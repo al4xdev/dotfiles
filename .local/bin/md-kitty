@@ -1,0 +1,125 @@
+#!/usr/bin/env python3
+import sys
+import re
+import subprocess
+import os
+import hashlib
+import tempfile
+import urllib.request
+
+CACHE_DIR = os.path.expanduser('~/.cache/md_kitty_mermaid')
+os.makedirs(CACHE_DIR, exist_ok=True)
+
+def render_mermaid_to_png(diagram_code):
+    diagram_hash = hashlib.md5(diagram_code.encode('utf-8')).hexdigest()
+    png_path = os.path.join(CACHE_DIR, f"{diagram_hash}.png")
+    
+    if not os.path.exists(png_path):
+        mmd_path = os.path.join(CACHE_DIR, f"{diagram_hash}.mmd")
+        with open(mmd_path, 'w', encoding='utf-8') as f:
+            f.write(diagram_code)
+        
+        proc = subprocess.run([
+            'npx', '-y', '@mermaid-js/mermaid-cli',
+            '-i', mmd_path,
+            '-o', png_path,
+            '-t', 'dark',
+            '-b', '#1e1e2e',
+            '-w', '1200',
+            '-s', '2'
+        ], capture_output=True, text=True)
+        
+        if proc.returncode != 0 or not os.path.exists(png_path):
+            return None
+            
+    return png_path
+
+def display_kitty_image(png_path):
+    subprocess.run(['kitty', '+kitten', 'icat', png_path])
+
+def main():
+    if len(sys.argv) > 1 and sys.argv[1] not in ('-', '--help', '-h'):
+        filepath = sys.argv[1]
+        try:
+            with open(filepath, 'r', encoding='utf-8') as f:
+                content = f.read()
+        except Exception as e:
+            print(f"Error reading file {filepath}: {e}", file=sys.stderr)
+            sys.exit(1)
+    else:
+        content = sys.stdin.read()
+
+    # Split markdown by mermaid blocks
+    mermaid_pattern = re.compile(r'```mermaid\s*\n(.*?)```', re.DOTALL)
+    parts = mermaid_pattern.split(content)
+
+    for i, part in enumerate(parts):
+        if i % 2 == 0:
+            if part.strip():
+                # Render markdown part using rich with patched table borders and row dividers
+                python_script = """
+import sys
+from rich.console import Console
+from rich.markdown import Markdown, TableElement
+from rich.table import Table
+from rich import box
+
+def custom_rich_console(self, console, options):
+    table = Table(
+        box=box.ROUNDED,
+        pad_edge=True,
+        show_lines=True,
+        style="markdown.table.border",
+        show_edge=True,
+        collapse_padding=False,
+        padding=(0, 1)
+    )
+
+    if self.header is not None and self.header.row is not None:
+        for column in self.header.row.cells:
+            heading = column.content.copy()
+            heading.stylize("markdown.table.header")
+            table.add_column(heading)
+
+    if self.body is not None:
+        for row in self.body.rows:
+            row_content = [element.content for element in row.cells]
+            table.add_row(*row_content)
+
+    yield table
+
+TableElement.__rich_console__ = custom_rich_console
+
+console = Console()
+with open(sys.argv[1], 'r', encoding='utf-8') as f:
+    md = Markdown(f.read())
+
+console.print(md)
+"""
+                with tempfile.NamedTemporaryFile('w', suffix='.md', delete=False, encoding='utf-8') as tmp_md:
+                    tmp_md.write(part)
+                    tmp_md_path = tmp_md.name
+
+                with tempfile.NamedTemporaryFile('w', suffix='.py', delete=False, encoding='utf-8') as tmp_py:
+                    tmp_py.write(python_script)
+                    tmp_py_path = tmp_py.name
+
+                try:
+                    subprocess.run(['uv', 'run', '--with', 'rich', 'python3', tmp_py_path, tmp_md_path])
+                finally:
+                    if os.path.exists(tmp_md_path):
+                        os.remove(tmp_md_path)
+                    if os.path.exists(tmp_py_path):
+                        os.remove(tmp_py_path)
+        else:
+            # Mermaid block
+            png_path = render_mermaid_to_png(part)
+            if png_path:
+                print("\n📊 Diagrama Mermaid (Renderizado em Alta Definição):\n")
+                display_kitty_image(png_path)
+                print("\n")
+            else:
+                print(f"\n```mermaid\n{part}\n```\n")
+
+if __name__ == '__main__':
+    main()
