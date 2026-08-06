@@ -6,80 +6,36 @@
   brain dumps.
 - Treat every session as a clean slate.
 
-## Destructive File Ops: Prefer `/tmp` over `rm`
+## Destructive file ops: prefer `/tmp` over `rm`
 
-- Move files to `/tmp/` (or `.bak`) instead of `rm -rf`. Use plain `rm` only
-  when the user   explicitly says "delete", "rm", or "permanently remove".
+When clearing files at the user's request, **move them to `/tmp/`** (or rename
+with a `.bak` suffix) instead of using `rm -rf`. The OS will reap `/tmp` over
+time, and the files stay recoverable in the meantime if the user changes their
+mind.
 
-## Shell & Tooling
+Use plain `rm` only when the user explicitly says "delete", "rm", or
+"permanently remove".
 
-- Shell: **fish**. Python projects use `uv` — venv at `.venv/`, activate with
-  `source .venv/bin/activate.fish`.
-- Display server: **Wayland**. When output would be shown for the user to copy,
-  pipe it to `wl-copy` instead. Never use `xclip` or `xsel`.
-- Every shell command must capture output. Never run a command and assume it
-  succeeded. Always append  `; or report_error` to your commands, or immediately
-  `set st $status`.
-- For commands with no natural output (`mv`, `mkdir`, `chmod`...), append
-  `&& echo ok`.
+## Shell: fish | Python: uv
 
-## Long-Running Task Watchdog
+Use fish syntax. Python projects use `uv` — venv is at `.venv/`, activate with
+`source .venv/bin/activate.fish`.
 
-- Before starting any task expected to take >30s, register it:
-  `echo (date +%s) $task_description > /tmp/agt_task_active`
-- On completion (success or failure), clear it: `rm -f /tmp/agt_task_active`
-- If a sub-agent or background process is spawned, set a cron to alert if still
-  running   after a reasonable timeout:
-  `echo "notify-send 'AGY watchdog' 'Task may be stuck: $task_description'" | at now + 5 minutes`
-- If `/tmp/agt_task_active` already exists when starting a new task, report it —
-  a previous   task may have crashed without cleanup.
+### Avoid busy-loop polling
 
-## Persona and Execution Style
+Never busy-loop (`while`/`for` + `curl`) waiting on something — run it with
+`run_in_background: true` and wait for the completion notification; if manual
+polling is unavoidable, use `timeout` + `sleep N` with an exit condition.
 
-- Direct, no filler. Act like a senior staff engineer.
-- Root cause first — don't patch symptoms. Check for edge cases and security
-  risks before   touching anything.
-- Before changes, ask: "Could this break existing tests? Is this the simplest
-  solution?   Does it maintain architectural consistency?"
+### Available tools
 
-## Anti-Looping
+uv, jq, az, wl-copy/wl-paste
 
-- If you're running the same command or hitting the same error twice, **stop**.
-  Analyze why   it failed, form a new hypothesis, verify assumptions, then act.
-- If genuinely stuck, say so — explain what failed and ask for direction. Don't
-  loop silently.
+### Clipboard: Wayland (`wl-copy`)
 
-## Scope Discipline
-
-- Ambiguous request? Respond with a recommendation + main tradeoff in 2-3
-  sentences. Don't   implement until intent is clear.
-- Don't add features, refactor, or abstract beyond the task. If done, stop —
-  don't invent   next steps. Report failures and skipped steps faithfully.
-
-## Code Discipline
-
-- No placeholders (`// ... rest of code`, `# existing impl`, etc.). Always write
-  complete code.
-- Read a file before editing it. Check linter output after every change.
-
-## Language Selection: Shell-First, Python Last
-
-- Default to fish + Unix tools (`jq`, `awk`, `sed`, `curl`, `fd`, `rg`) for
-  system tasks.
-- Python only when: (a) a library has no shell equivalent (pandas, PIL, a
-  specific SDK), or   (b) the logic is genuinely clearer in Python. "I know how
-  to do it in Python" is not a reason.
-- Never wrap a single shell command in `subprocess`. Reusable scripts default to
-  `.fish`.
-- **Before writing Python, state why in one sentence.** If you can't, use shell
-  instead.
-
-## Context & Token Management (Anti-Token Drain)
-
-Never dump raw logs, event viewer output, memory dumps, or multi-line file
-contents directly into the chat.
-
-- If needed, dump heavy output to a file in `/tmp` and analyze it from there.
-- Report only the summary, root cause, and action items in chat.
-- Keep turns short. If there's a long trial-and-error history, write it to a
-  file in `/tmp`
+The user uses Wayland. When you generate something they're going to **paste
+somewhere else** (a command for them to run, a query/SQL result, a list of
+names/files, a snippet, any output that unblocks their next step), **proactively
+put it on the clipboard** via `... | wl-copy` and let them know it's there —
+don't make them copy it by hand or just "show" it on screen. Especially when you
+ask them to run a command: deliver it already piped into `wl-copy`.
