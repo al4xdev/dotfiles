@@ -4,8 +4,8 @@
 #
 # Sources the repo files directly and asserts every behavior we care about:
 # config.fish loads cleanly, aliases expand as expected, the gen launcher
-# works, completions are registered, the deprecated archive function is
-# callable, and helper scripts have valid syntax + no path regressions.
+# works, completions are registered, wrappers (agy/claude) wire the grammar-editor,
+# kitty.conf maps page scroll keys, and helper scripts have valid syntax + no path regressions.
 #
 # Runs under `fish --no-config` (via env -S) so results are not contaminated
 # by whatever is currently autoloaded from the user's shell.
@@ -66,6 +66,9 @@ else
     _bad "config.fish emitted errors:"
     echo $cfg_errors
 end
+
+# Source config.fish directly into this shell context
+source $fish_dir/config.fish >/dev/null 2>&1
 
 _assert_contains "ls alias uses eza with expected flags" \
     "eza -al --color=always --group-directories-first --icons" \
@@ -140,90 +143,46 @@ _assert_contains "deprecated prints commit prefix summary" "commit prefixes" \
 
 # ---------------------------------------------------------------------------
 echo ""
-echo "=== deepcode functions & abbreviations ==="
+echo "=== agy & claude wrappers ==="
 
-# 1. Test deepcode abbreviations expansion
-set -l abbr_show (abbr --show | string collect)
-for abb in gmmax gmno gmmed gmlow gmun
-    if abbr -q $abb
-        _ok "abbreviation $abb is defined"
+for wrapper in agy claude
+    set -l fpath $fish_dir/functions/$wrapper.fish
+    if test -f $fpath
+        source $fpath
+        if functions -q $wrapper
+            _ok "function $wrapper loaded"
+            set -l body (functions $wrapper | string collect)
+            _assert_contains "$wrapper sets grammar-fix-editor.sh EDITOR" \
+                "grammar-fix-editor.sh" "$body"
+        else
+            _bad "function $wrapper failed to load"
+        end
     else
-        _bad "abbreviation $abb is NOT defined"
+        _bad "wrapper file missing: $fpath"
     end
 end
 
-_assert_contains "gmmax uses llama-server" "llama-server" "$abbr_show"
-_assert_contains "gmmax has temperature top_p top_k samplers" "temperature;top_p;top_k" "$abbr_show"
-_assert_contains "gmno has reasoning off" "--reasoning off" "$abbr_show"
-_assert_contains "gmmed has mmproj GGUF" "mmproj-F16.gguf" "$abbr_show"
-_assert_contains "gmlow has reasoning off and fit-ctx 4096" "--fit-ctx 4096" "$abbr_show"
-_assert_contains "gmun has uncensored fast v2 Q4_K_M GGUF" "supergemma4-26b-uncensored-fast-v2-Q4_K_M.gguf" "$abbr_show"
+# ---------------------------------------------------------------------------
+echo ""
+echo "=== kitty.conf ==="
 
-# Mock deepcode function to check what it was called with and the env variables
-function deepcode
-    set -g _deepcode_called 1
-    set -g _deepcode_argv $argv
-    set -g _deepcode_model $DEEPCODE_MODEL
-    set -g _deepcode_base_url $DEEPCODE_BASE_URL
-    set -g _deepcode_api_key $DEEPCODE_API_KEY
-end
-
-# 2. Test deepcode-cloud
-source $fish_dir/functions/deepcode-cloud.fish
-if functions -q deepcode-cloud
-    _ok "deepcode-cloud function loaded"
+set -l kitty_cfg $repo_root/.config/kitty/kitty.conf
+if test -f $kitty_cfg
+    _ok "kitty.conf exists"
+    set -l kitty_content (cat $kitty_cfg | string collect)
+    _assert_contains "kitty.conf maps page_up" "map page_up" "$kitty_content"
+    _assert_contains "kitty.conf maps page_down" "map page_down" "$kitty_content"
+    _assert_contains "kitty.conf maps shift+page_up" "map shift+page_up" "$kitty_content"
+    _assert_contains "kitty.conf maps shift+page_down" "map shift+page_down" "$kitty_content"
 else
-    _bad "deepcode-cloud function not found"
+    _bad "kitty.conf not found at $kitty_cfg"
 end
-
-set -g _deepcode_called 0
-set -g _deepcode_argv
-set -e DEEPCODE_MODEL
-set -e DEEPCODE_BASE_URL
-set -e DEEPCODE_API_KEY
-
-deepcode-cloud cloud_arg1 cloud_arg2
-
-_assert_status "deepcode-cloud runs deepcode mock" 1 "$_deepcode_called"
-_assert_status "deepcode-cloud passes args" "cloud_arg1 cloud_arg2" "$_deepcode_argv"
-_assert_status "deepcode-cloud sets DEEPCODE_MODEL" "deepseek-v4-pro" "$_deepcode_model"
-_assert_status "deepcode-cloud sets DEEPCODE_BASE_URL" "https://api.deepseek.com" "$_deepcode_base_url"
-
-# 3. Test deepcode-local
-source $fish_dir/functions/deepcode-local.fish
-if functions -q deepcode-local
-    _ok "deepcode-local function loaded"
-else
-    _bad "deepcode-local function not found"
-end
-
-set -g _deepcode_called 0
-set -g _deepcode_argv
-set -e DEEPCODE_MODEL
-set -e DEEPCODE_BASE_URL
-set -e DEEPCODE_API_KEY
-
-deepcode-local local_arg1
-
-_assert_status "deepcode-local runs deepcode mock" 1 "$_deepcode_called"
-_assert_status "deepcode-local passes args" "local_arg1" "$_deepcode_argv"
-_assert_status "deepcode-local sets DEEPCODE_MODEL" "unsloth/Qwen-AgentWorld-35B-A3B-GGUF" "$_deepcode_model"
-_assert_status "deepcode-local sets DEEPCODE_BASE_URL" "http://localhost:8888/v1" "$_deepcode_base_url"
-_assert_status "deepcode-local sets DEEPCODE_API_KEY" "sk-unsloth-828bbc10b07eb9f75f6d9d645bdd5d94" "$_deepcode_api_key"
-
-# Clean up mock
-functions -e deepcode
-set -e _deepcode_called
-set -e _deepcode_argv
-set -e _deepcode_model
-set -e _deepcode_base_url
-set -e _deepcode_api_key
 
 # ---------------------------------------------------------------------------
 echo ""
 echo "=== my_scripts ==="
 
-for script in $scripts_dir/start.sh $scripts_dir/start_video.sh
+for script in $scripts_dir/start.sh $scripts_dir/start_video.sh $scripts_dir/grammar-fix-editor.sh
     set -l name (basename $script)
     if bash -n $script 2>/dev/null
         _ok "syntax ok: $name"
@@ -239,12 +198,36 @@ for script in $scripts_dir/start.sh $scripts_dir/start_video.sh
 end
 
 # Specific regression: start_video.sh used to invoke `python home/alex/...`
-# (missing leading slash) — make sure that exact bug never returns.
 if grep -qE '^\s*python\s+home/' $scripts_dir/start_video.sh
     _bad "start_video.sh has the 'python home/...' typo regression"
 else
     _ok "start_video.sh uses an absolute python path"
 end
+
+# Specific tests for grammar-fix-editor.sh
+set -l gscript $scripts_dir/grammar-fix-editor.sh
+if test -x $gscript
+    _ok "grammar-fix-editor.sh is executable"
+else
+    _bad "grammar-fix-editor.sh is not executable"
+end
+
+# Test empty file handling in grammar-fix-editor.sh
+set -l tmp_empty (mktemp)
+bash $gscript $tmp_empty 2>/dev/null
+_assert_status "grammar-fix-editor.sh on empty file returns 0" 0 $status
+if test ! -s $tmp_empty
+    _ok "grammar-fix-editor.sh leaves empty file untouched"
+else
+    _bad "grammar-fix-editor.sh modified empty file"
+end
+rm -f $tmp_empty
+
+set -l gscript_content (cat $gscript | string collect)
+_assert_contains "grammar-fix-editor.sh supports DEEPSEEK_API_KEY" "DEEPSEEK_API_KEY" "$gscript_content"
+_assert_contains "grammar-fix-editor.sh supports OPENROUTER_API_KEY" "OPENROUTER_API_KEY" "$gscript_content"
+_assert_contains "grammar-fix-editor.sh handles reasoning_content" "reasoning_content" "$gscript_content"
+_assert_contains "grammar-fix-editor.sh strips think tags" "think" "$gscript_content"
 
 # ---------------------------------------------------------------------------
 echo ""
