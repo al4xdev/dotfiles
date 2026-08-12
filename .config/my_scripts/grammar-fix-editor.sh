@@ -28,7 +28,15 @@ RESPONSE="$(curl -sf --max-time 20 "$LLAMA_URL/v1/chat/completions" \
   -H "Content-Type: application/json" \
   -d "$PAYLOAD")" || { exit 0; }
 
-CORRECTED="$(printf '%s' "$RESPONSE" | jq -r '.choices[0].message.content // empty')"
+CORRECTED="$(printf '%s' "$RESPONSE" | jq -r '
+  .choices[0].message |
+  if (.content // "") != "" then .content
+  elif (.reasoning_content // "") != "" then .reasoning_content
+  else empty
+  end
+')"
+# Strip <think>...</think> tags if present (reasoning models)
+CORRECTED="$(printf '%s' "$CORRECTED" | perl -0pe 's/<think>.*?<\/think>\s*//gs')"
 
 if [ -n "$CORRECTED" ]; then
   printf '%s' "$CORRECTED" > "$FILE"
