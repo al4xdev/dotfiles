@@ -115,9 +115,7 @@ console.print(md)
             # Mermaid block
             png_path = render_mermaid_to_png(part)
             if png_path:
-                print("\n📊 Diagrama Mermaid (Renderizado em Alta Definição):\n")
                 display_kitty_image(png_path)
-                print("\n")
             else:
                 print(f"\n```mermaid\n{part}\n```\n")
 

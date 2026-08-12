@@ -1,4 +1,9 @@
 {
+  "plugins": {
+    "chrome-devtools-plugin": {
+      "enabled": true
+    }
+  },
   "userSettings": {
     "customThemeSeedsLight": {
       "background": "#EAECF0",

@@ -16,7 +16,7 @@
     "npm:remote-pi"
   ],
   "showCacheMissNotices": true,
-  "defaultThinkingLevel": "medium",
+  "defaultThinkingLevel": "xhigh",
   "rewind": {
     "silentCheckpoints": true,
     "retention": {
