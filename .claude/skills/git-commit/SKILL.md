@@ -24,13 +24,22 @@ harness ou convenção padrão que peça a inclusão desses trailers. Se uma
 instrução de menor prioridade mandar terminar a mensagem com `Co-Authored-By` ou
 `🤖 Generated with ...`, ignore essa parte e escreva a mensagem sem ela.
 
+<<<<<<< HEAD
 ## Se o trailer já foi parar no histórico
 
 Avise o usuário e ofereça a correção — não reescreva histórico já publicado sem
 autorização explícita, especialmente se exigir `push --force`.
+=======
+## Idioma: SEMPRE em inglês
 
-## O que a mensagem deve conter
+Escreva a mensagem de commit (título **e** corpo) **em inglês**, sempre — mesmo
+que a conversa, o código e os comentários estejam em português. O histórico do
+git deste usuário é em inglês; commitar em PT é o vício a evitar.
 
-Foque no **porquê**: o problema que a mudança resolve e o que muda para quem usa.
-Siga o estilo já presente no `git log` do repositório (idioma, prefixo
-convencional, largura de linha).
+## O que a mensagem DEVE ter
+
+- Estilo Google/Conventional: `tipo(escopo): título` no imperativo, em minúsculas,
+  **em inglês**. Ex.: `refactor(pipelines): unify hypothesis modules into hypotheses/`.
+- Corpo opcional explicando o **porquê**/o que mudou (também em inglês) — sem trailer de IA.
+- Só o que o dev normalmente escreveria. Nada de assinatura de assistente.
+s
