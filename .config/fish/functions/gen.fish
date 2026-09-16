@@ -19,8 +19,11 @@ function gen
             ~/.config/my_scripts/start.sh
 
         case 'video'
-            echo "🎬 Launching ComfyUI for Videos..."
-            ~/.config/my_scripts/start_video.sh
+            echo "🎬 Launching ComfyUI for Videos (RAM high 79%, max 80%)..."
+            systemd-run --user --scope --quiet --collect \
+                --property MemoryHigh=79% \
+                --property MemoryMax=80% \
+                ~/.config/my_scripts/start_video.sh
 
         case '*'
             echo "❌ Unknown method: '$method'"

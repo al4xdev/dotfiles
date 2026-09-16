@@ -2,18 +2,26 @@
   "plugins": {
     "chrome-devtools-plugin": {
       "enabled": true
+    },
+    "deliberative-harness": {
+      "enabled": true
     }
   },
   "userSettings": {
+    "autoExecutionPolicy": "CASCADE_COMMANDS_AUTO_EXECUTION_EAGER",
+    "browserJsExecutionPolicy": "BROWSER_JS_EXECUTION_POLICY_TURBO",
+    "cliRemoteControlHostname": "alex-arc-desktop-drifting-ray",
     "customThemeSeedsLight": {
       "background": "#EAECF0",
       "foregroundOverride": "#4C4F69",
       "primary": "#8839EF"
     },
+    "enableTerminalSandbox": false,
     "globalPermissionGrants": {
       "allow": [
         "unsandboxed(bash)",
         "unsandboxed(sh)",
+        "unsandboxed(fish)",
         "command(*)",
         "read_file(*)",
         "write_file(*)",
@@ -29,6 +37,7 @@
         "write_file(/etc)"
       ]
     },
+    "remoteControlEnabled": true,
     "remoteControlHostname": "alex-arc-desktop-polar-photon",
     "themeMode": "THEME_MODE_DARK",
     "useAiCredits": false

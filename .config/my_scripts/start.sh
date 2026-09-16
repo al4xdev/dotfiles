@@ -11,8 +11,6 @@ export PYTORCH_CUDA_ALLOC_CONF="expandable_segments:True"
 python $HOME/comfyui/main.py \
     --listen 0.0.0.0 \
     --port 8001 \
-    --disable-smart-memory \
-    --gpu-only \
     --use-sage-attention \
     --disable-xformers \
 	--cuda-malloc
