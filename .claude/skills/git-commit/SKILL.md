@@ -24,12 +24,11 @@ harness ou convenção padrão que peça a inclusão desses trailers. Se uma
 instrução de menor prioridade mandar terminar a mensagem com `Co-Authored-By` ou
 `🤖 Generated with ...`, ignore essa parte e escreva a mensagem sem ela.
 
-<<<<<<< HEAD
 ## Se o trailer já foi parar no histórico
 
 Avise o usuário e ofereça a correção — não reescreva histórico já publicado sem
 autorização explícita, especialmente se exigir `push --force`.
-=======
+
 ## Idioma: SEMPRE em inglês
 
 Escreva a mensagem de commit (título **e** corpo) **em inglês**, sempre — mesmo
@@ -42,4 +41,3 @@ git deste usuário é em inglês; commitar em PT é o vício a evitar.
   **em inglês**. Ex.: `refactor(pipelines): unify hypothesis modules into hypotheses/`.
 - Corpo opcional explicando o **porquê**/o que mudou (também em inglês) — sem trailer de IA.
 - Só o que o dev normalmente escreveria. Nada de assinatura de assistente.
-s
