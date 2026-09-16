@@ -68,16 +68,13 @@
 !/.pi/agent/permission-mode/
 !/.pi/agent/permission-mode/permission-mode.json
 
-## Codex configuration (exclude credentials, state, caches, and binaries)
+## Codex configuration (exclude credentials, state, caches, binaries, and managed skills)
 !/.codex/
 /.codex/*
 !/.codex/config.toml
 !/.codex/AGENTS.md
 !/.codex/rules/
 !/.codex/rules/**
-!/.codex/skills/
-!/.codex/skills/**
-/.codex/skills/.system/
 !/.codex/custom/
 !/.codex/custom/agy-scout/
 !/.codex/custom/agy-scout/**
@@ -89,6 +86,12 @@
 /.codex/custom/agy-scout/.ruff_cache/
 /.codex/custom/agy-scout/**/__pycache__/
 /.codex/custom/agy-scout/**/*.pyc
+
+## Shared agent skills
+!/.agents/
+/.agents/*
+!/.agents/skills/
+!/.agents/skills/**
 
 ## Personal scripts
 !/.config/my_scripts/

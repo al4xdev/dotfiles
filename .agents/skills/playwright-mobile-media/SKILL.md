@@ -62,7 +62,7 @@ Read [references/media.md](references/media.md) when converting or optimizing ca
 Create an action JSON in `/tmp`, then run:
 
 ```bash
-uv run python ~/.codex/skills/playwright-mobile-media/scripts/mobile_capture.py \
+uv run python ~/.agents/skills/playwright-mobile-media/scripts/mobile_capture.py \
   --url http://127.0.0.1:8889 \
   --actions /tmp/mobile-actions.json \
   --output-dir /tmp/mobile-capture \

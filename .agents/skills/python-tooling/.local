@@ -1,0 +1,11 @@
+# Tool locations (Arch Linux, system-wide)
+# Generated: 2026-06-30
+
+python3 = /usr/bin/python3  (3.14.5)
+uv      = /usr/bin/uv       (0.11.21)
+ruff    = uvx ruff           (0.15.20)
+mypy    = uvx mypy           (via uvx)
+pytest  = uvx pytest         (9.1.1)
+
+# None of ruff/mypy/pytest are installed globally.
+# Always use `uvx <tool>` — it downloads and caches automatically.
