@@ -141,7 +141,7 @@ approval_mode = "approve"
 
 [mcp_servers.agy_scout]
 command = "uv"
-args = ["run", "--directory", "/home/alex/git/my/agy_subag", "agy-mcp"]
+args = ["run", "--directory", "/home/alex/.codex/custom/agy-scout", "agy-mcp"]
 
 [mcp_servers.agy_scout.tools.agy_scout]
 approval_mode = "approve"

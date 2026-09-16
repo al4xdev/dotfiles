@@ -78,6 +78,17 @@
 !/.codex/skills/
 !/.codex/skills/**
 /.codex/skills/.system/
+!/.codex/custom/
+!/.codex/custom/agy-scout/
+!/.codex/custom/agy-scout/**
+/.codex/custom/agy-scout/.agy-runs/
+/.codex/custom/agy-scout/.venv/
+/.codex/custom/agy-scout/*.egg-info/
+/.codex/custom/agy-scout/.pytest_cache/
+/.codex/custom/agy-scout/.mypy_cache/
+/.codex/custom/agy-scout/.ruff_cache/
+/.codex/custom/agy-scout/**/__pycache__/
+/.codex/custom/agy-scout/**/*.pyc
 
 ## Personal scripts
 !/.config/my_scripts/
