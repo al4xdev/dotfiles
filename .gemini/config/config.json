@@ -19,9 +19,6 @@
     "enableTerminalSandbox": false,
     "globalPermissionGrants": {
       "allow": [
-        "unsandboxed(bash)",
-        "unsandboxed(sh)",
-        "unsandboxed(fish)",
         "command(*)",
         "read_file(*)",
         "write_file(*)",
