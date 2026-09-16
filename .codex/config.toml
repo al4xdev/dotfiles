@@ -1,0 +1,158 @@
+model = "gpt-5.6-terra"
+model_reasoning_effort = "medium"
+approvals_reviewer = "user"
+
+[projects."/home/alex/git/my/porf_page"]
+trust_level = "trusted"
+
+[projects."/home/alex/git/my/roleplay"]
+trust_level = "trusted"
+approval_policy = "never"
+sandbox_mode = "danger-full-access"
+
+[projects."/home/alex/git/my/cv"]
+trust_level = "trusted"
+
+[projects."/home/alex/git/my/nested_prompt"]
+trust_level = "trusted"
+
+[projects."/home/alex"]
+trust_level = "trusted"
+
+[projects."/home/alex/git/my/dotfiles"]
+trust_level = "trusted"
+
+[projects."/home/alex/git/my/meta_2028"]
+trust_level = "trusted"
+
+[projects."/home/alex/git/my/bey_simu"]
+trust_level = "trusted"
+
+[projects."/home/alex/git/my/alex-tavern"]
+trust_level = "trusted"
+
+[projects."/home/alex/git/my/bey_a"]
+trust_level = "trusted"
+
+[projects."/home/alex/git/my/Chatterbox-TTS-Server"]
+trust_level = "trusted"
+
+[projects."/home/alex/Downloads"]
+trust_level = "trusted"
+
+[projects."/home/alex/git/my/mobile_coding"]
+trust_level = "trusted"
+
+[projects."/home/alex/Documents/Codex/2026-08-01-new-realtime-voice-chat"]
+trust_level = "trusted"
+
+[projects."/home/alex/Documents/Codex/2026-08-01-new-realtime-voice-chat-2"]
+trust_level = "trusted"
+
+[projects."/home/alex/git/my/mobile_console"]
+trust_level = "trusted"
+
+[projects."/home/alex/git/my/florisboard"]
+trust_level = "trusted"
+
+[projects."/home/alex/git/my/MegaMan64Recomp"]
+trust_level = "trusted"
+
+[projects."/home/alex/git/my/rt"]
+trust_level = "trusted"
+
+[projects."/home/alex/git/my/ha_app"]
+trust_level = "trusted"
+
+[projects."/home/alex/git/my/qt"]
+trust_level = "trusted"
+
+[projects."/home/alex/git/my/ha"]
+trust_level = "trusted"
+
+[projects."/home/alex/git/my/krea2_demo"]
+trust_level = "trusted"
+
+[projects."/home/alex/git/my/sc_orq"]
+trust_level = "trusted"
+
+[projects."/home/alex/git/my/sc_orq_anima"]
+trust_level = "trusted"
+
+[projects."/home/alex/git/my/i2v_demo"]
+trust_level = "trusted"
+
+[projects."/home/alex/git/my/rpg"]
+trust_level = "trusted"
+
+[projects."/home/alex/git/my/krea2_demo/flux_sequence_app"]
+trust_level = "trusted"
+
+[projects."/home/alex/git/my"]
+trust_level = "trusted"
+
+[projects."/home/alex/git/my/feedkit-cli"]
+trust_level = "trusted"
+
+[projects."/home/alex/comfyui"]
+trust_level = "trusted"
+
+[projects."/home/alex/git/my/dlss5-enabler"]
+trust_level = "trusted"
+
+[projects."/home/alex/git/my/agy_subag"]
+trust_level = "trusted"
+
+[tui.model_availability_nux]
+"gpt-5.6-sol" = 4
+gpt-6-astra = 4
+
+[mcp_servers.openaiDeveloperDocs]
+url = "https://developers.openai.com/mcp"
+
+[mcp_servers.playwright]
+command = "npx"
+args = ["@playwright/mcp@latest"]
+
+[mcp_servers.playwright.tools.browser_click]
+approval_mode = "approve"
+
+[mcp_servers.playwright.tools.browser_navigate]
+approval_mode = "approve"
+
+[mcp_servers.playwright.tools.browser_resize]
+approval_mode = "approve"
+
+[mcp_servers.playwright.tools.browser_tabs]
+approval_mode = "approve"
+
+[mcp_servers.playwright.tools.browser_evaluate]
+approval_mode = "approve"
+
+[mcp_servers.adb]
+command = "npx"
+args = ["-y", "adb-mcp"]
+
+[mcp_servers.adb.tools.adb_devices]
+approval_mode = "approve"
+
+[mcp_servers.adb.tools.dump_image]
+approval_mode = "approve"
+
+[mcp_servers.agy_scout]
+command = "uv"
+args = ["run", "--directory", "/home/alex/git/my/agy_subag", "agy-mcp"]
+
+[mcp_servers.agy_scout.tools.agy_scout]
+approval_mode = "approve"
+[mcp_servers.agy_scout.tools.agy_followup]
+approval_mode = "approve"
+[mcp_servers.agy_scout.tools.agy_status]
+approval_mode = "approve"
+[mcp_servers.agy_scout.tools.agy_interrupt]
+approval_mode = "approve"
+[mcp_servers.agy_scout.tools.agy_continue]
+approval_mode = "approve"
+
+[notice]
+hide_rate_limit_model_nudge = true

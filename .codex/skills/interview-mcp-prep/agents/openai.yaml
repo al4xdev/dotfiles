@@ -1,0 +1,4 @@
+interface:
+  display_name: "Interview MCP Prep"
+  short_description: "Evidence-grounded interview answers"
+  default_prompt: "Use $interview-mcp-prep to prepare and answer an English interview question."

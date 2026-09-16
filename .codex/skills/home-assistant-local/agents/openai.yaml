@@ -1,0 +1,4 @@
+interface:
+  display_name: "Home Assistant Local"
+  short_description: "Controla e consulta a casa pelo Home Assistant"
+  default_prompt: "Use $home-assistant-local para consultar ou controlar um dispositivo da minha casa."

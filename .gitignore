@@ -68,6 +68,17 @@
 !/.pi/agent/permission-mode/
 !/.pi/agent/permission-mode/permission-mode.json
 
+## Codex configuration (exclude credentials, state, caches, and binaries)
+!/.codex/
+/.codex/*
+!/.codex/config.toml
+!/.codex/AGENTS.md
+!/.codex/rules/
+!/.codex/rules/**
+!/.codex/skills/
+!/.codex/skills/**
+/.codex/skills/.system/
+
 ## Personal scripts
 !/.config/my_scripts/
 !/.config/my_scripts/**

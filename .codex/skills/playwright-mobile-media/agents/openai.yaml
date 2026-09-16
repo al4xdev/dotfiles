@@ -1,0 +1,4 @@
+interface:
+  display_name: "Playwright Mobile Media"
+  short_description: "Audit mobile UI and capture polished media"
+  default_prompt: "Use $playwright-mobile-media to audit this mobile web flow and capture reproducible screenshots or gesture clips."

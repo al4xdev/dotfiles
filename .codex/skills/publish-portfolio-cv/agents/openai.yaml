@@ -1,0 +1,4 @@
+interface:
+  display_name: "Publish Portfolio CV"
+  short_description: "Route verified CV content into the portfolio"
+  default_prompt: "Use $publish-portfolio-cv to sync verified CV content into the isolated portfolio editor and validate both language exports."
