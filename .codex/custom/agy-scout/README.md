@@ -8,6 +8,15 @@ o processo externo é o binário `agy`.
 
 As tools retornam dados compactos:
 
+Todas as respostas incluem `codex_5h` com `remaining_percent` e `resets_at`
+(ISO 8601 em UTC). O servidor consulta `account/rateLimits/read` pelo binário
+local do Codex ao responder; se a consulta falhar ou a janela de 5 horas não
+estiver disponível, o campo vem como `null`. Essa consulta não envia prompt
+nem consome uma chamada de modelo.
+Quando restam 5% ou menos e o reset ainda está no futuro, `codex_5h` também
+inclui uma recomendação para o agente avisar, aguardar o reset e retomar a
+tarefa pendente.
+
 - `agy_scout(prompt, cwd?)`: inicia um scout e retorna `run_id` e
   `conversation_id`.
 - `agy_status(run_id, tail=0)`: retorna apenas o estado do processo. Eventos e

@@ -7,12 +7,14 @@ import signal
 import sys
 import uuid
 from dataclasses import dataclass, field
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
 ROOT = Path(__file__).resolve().parents[1]
 RUNS = ROOT / ".agy-runs"
 AGY = os.environ.get("AGY_BIN", "/home/alex/.local/bin/agy")
+CODEX = os.environ.get("CODEX_BIN", "codex")
 TOOLS = [
     {"name": "agy_scout", "description": "Dispatch a long-context agy scout.", "inputSchema": {"type": "object", "properties": {"prompt": {"type": "string"}, "cwd": {"type": "string"}}, "required": ["prompt"]}},
     {"name": "agy_followup", "description": "Send a follow-up to an active scout.", "inputSchema": {"type": "object", "properties": {"run_id": {"type": "string"}, "prompt": {"type": "string"}}, "required": ["run_id", "prompt"]}},
@@ -38,6 +40,74 @@ class Session:
 
 sessions: dict[str, Session] = {}
 lock = asyncio.Lock()
+
+
+def _five_hour_window(snapshot: dict[str, Any]) -> dict[str, Any] | None:
+    """Keep only the five-hour bucket from an app-server usage response."""
+    limits = snapshot.get("rateLimitsByLimitId") or {}
+    codex = limits.get("codex") or snapshot.get("rateLimits") or {}
+    if codex.get("limitId") not in (None, "codex"):
+        return None
+    for window in (codex.get("primary"), codex.get("secondary")):
+        if not isinstance(window, dict) or window.get("windowDurationMins") != 300:
+            continue
+        used = window.get("usedPercent")
+        reset = window.get("resetsAt")
+        if not isinstance(used, int) or not isinstance(reset, int):
+            return None
+        remaining = max(0, min(100, 100 - used))
+        usage = {
+            "remaining_percent": remaining,
+            "resets_at": datetime.fromtimestamp(reset, UTC).isoformat(),
+        }
+        if remaining <= 5 and reset > datetime.now(UTC).timestamp():
+            usage["recommendation"] = (
+                "Avise o usuário, aguarde de forma interrompível até resets_at, "
+                "consulte o limite novamente e retome a tarefa pendente."
+            )
+        return usage
+    return None
+
+
+async def _codex_5h_usage() -> dict[str, Any] | None:
+    """Ask the installed Codex app-server for a fresh, read-only usage snapshot."""
+    process: asyncio.subprocess.Process | None = None
+    try:
+        process = await asyncio.create_subprocess_exec(
+            CODEX, "app-server", "--stdio", stdin=asyncio.subprocess.PIPE,
+            stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.DEVNULL,
+        )
+        assert process.stdin is not None and process.stdout is not None
+        requests = (
+            {"id": 1, "method": "initialize", "params": {
+                "clientInfo": {"name": "agy-scout", "version": "0.1.0"}, "capabilities": {},
+            }},
+            {"id": 2, "method": "account/rateLimits/read", "params": {
+                "excludeResetCreditDetails": True,
+            }},
+        )
+        for request in requests:
+            process.stdin.write((json.dumps(request) + "\n").encode())
+            await process.stdin.drain()
+            while line := await asyncio.wait_for(process.stdout.readline(), timeout=5):
+                response = json.loads(line)
+                if response.get("id") == request["id"]:
+                    if response.get("error"):
+                        return None
+                    if request["id"] == 2:
+                        return _five_hour_window(response.get("result") or {})
+                    break
+    except (OSError, ValueError, TimeoutError, json.JSONDecodeError):
+        return None
+    finally:
+        if process is not None and process.returncode is None:
+            process.terminate()
+            try:
+                await asyncio.wait_for(process.wait(), timeout=1)
+            except TimeoutError:
+                process.kill()
+                await process.wait()
+    return None
 
 
 def _meta_path(run_id: str) -> Path:
@@ -254,18 +324,21 @@ async def agy_continue(run_id: str, prompt: str) -> dict:
 
 async def dispatch(name: str, args: dict[str, Any]) -> dict[str, Any]:
     if name == "agy_scout":
-        return await agy_scout(**args)
-    if name == "agy_followup":
-        return await agy_followup(**args)
-    if name == "agy_status":
-        return await agy_status(**args)
-    if name == "agy_wait":
-        return await agy_wait(**args)
-    if name == "agy_interrupt":
-        return await agy_interrupt(**args)
-    if name == "agy_continue":
-        return await agy_continue(**args)
-    raise ValueError(f"unknown tool: {name}")
+        result = await agy_scout(**args)
+    elif name == "agy_followup":
+        result = await agy_followup(**args)
+    elif name == "agy_status":
+        result = await agy_status(**args)
+    elif name == "agy_wait":
+        result = await agy_wait(**args)
+    elif name == "agy_interrupt":
+        result = await agy_interrupt(**args)
+    elif name == "agy_continue":
+        result = await agy_continue(**args)
+    else:
+        raise ValueError(f"unknown tool: {name}")
+    result["codex_5h"] = await _codex_5h_usage()
+    return result
 
 
 async def serve() -> None:
