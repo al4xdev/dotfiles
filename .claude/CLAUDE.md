@@ -30,21 +30,15 @@ Use plain `rm` only when the user explicitly says "delete", "rm", or
 
 ## Code comments: off by default
 
-Do not add comments to code you write or edit, unless the user explicitly
-asks for comments or the logic is genuinely non-obvious (e.g. a workaround
-for a specific bug, a non-standard algorithm). Match existing comment density
-in files you touch — don't strip comments that are already there.
+Do not add comments to code you write or edit, unless the user explicitly asks
+for comments or the logic is genuinely non-obvious (e.g. a workaround for a
+specific bug, a non-standard algorithm). Match existing comment density in files
+you touch — don't strip comments that are already there.
 
 ## Shell: fish | Python: uv
 
 Use fish syntax. Python projects use `uv` — venv is at `.venv/`, activate with
 `source .venv/bin/activate.fish`.
-
-### Avoid busy-loop polling
-
-Never busy-loop (`while`/`for` + `curl`) waiting on something — run it with
-`run_in_background: true` and wait for the completion notification; if manual
-polling is unavoidable, use `timeout` + `sleep N` with an exit condition.
 
 ### Available tools
 

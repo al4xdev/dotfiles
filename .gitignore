@@ -41,12 +41,18 @@
 !/.claude/skills/**
 !/.claude/CLAUDE.md
 
-## Gemini/Antigravity specific rules (Only GEMINI.md and config/config.json)
+## Gemini/Antigravity specific rules
 !/.gemini/
 /.gemini/*
+!/.gemini/grammar-fix.json
 !/.gemini/config/
+/.gemini/config/*
 !/.gemini/config/config.json
 !/.gemini/config/AGENTS.md
+!/.gemini/config/mcp_config.json
+!/.gemini/config/hooks.json
+!/.gemini/config/agents/
+!/.gemini/config/agents/**
 
 ## Pi coding agent specific rules
 !/.pi/
@@ -115,6 +121,7 @@
 .pi/agent/models.json
 
 ## SAFETY LOCKS (Ensure these never go to Git)
+.codex/auth.json
 .config/fish/fish_variables
 .config/fish/fish_history
 .claude/settings.json

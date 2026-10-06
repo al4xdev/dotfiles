@@ -2,9 +2,6 @@
   "plugins": {
     "chrome-devtools-plugin": {
       "enabled": true
-    },
-    "deliberative-harness": {
-      "enabled": true
     }
   },
   "userSettings": {
