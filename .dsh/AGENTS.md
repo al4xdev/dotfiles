@@ -1,16 +1,5 @@
 # Global user preferences
 
-## Destructive file ops: prefer `/tmp` over `rm`
-
-When clearing files at the user's request, prefer the `trash` tool for
-recoverable removal. If unavailable, move the explicitly verified target to
-`/tmp/` or rename it with a `.bak` suffix instead of using `rm -rf`.
-Never overwrite a recovery entry. `/tmp` may be cleared by the OS or reboot;
-recoverability is temporary, not durable backup.
-
-Use plain `rm` only when the user explicitly says "delete", "rm", or
-"permanently remove".
-
 ## Code comments
 
 Comment decisions, constraints, and logic that are not obvious from the code.
@@ -19,20 +8,20 @@ you touch and preserve useful existing comments.
 
 ## Execution conventions
 
-Use the native machine context for user-facing shell syntax, Python workflow
-and locations. Follow each execution tool's actual shell contract; do not assume
-that the user's interactive shell is the tool executor. If machine context is
-missing in a legacy instance, inspect the environment instead of inventing facts.
+Prefer the native tool over the shell: `read`, `list`, `glob` and `grep` to
+inspect, `edit`/`write`/`apply_patch` to change, `trash` to remove,
+`clipboard_copy` to hand something back. Keep `bash` for what only a shell can
+do — builds, tests, `git`, processes, ports.
 
-## Proactive clipboard copying
+Give each call one operation. A script that does a dozen things at once is not
+faster, it is opaque: the transcript shows a wall of text instead of a sequence
+of decisions, and there is no discrete point to revert. Anything destructive
+gets its own call and its own approval.
 
-When you generate something the user will **paste somewhere else** (a command,
-query/SQL result, list, snippet, or other paste-ready output), **proactively copy
-it with `clipboard_copy`** and tell them it is on the clipboard. Do not make them
-copy it manually or only show it on screen. The tool accepts text verbatim;
-clipboard plumbing is internal. If unavailable in a legacy instance, use a
-verified local fallback and never report success without a successful copy.
-
+`bash` runs `bash -c`, not the user's interactive shell. Write anything the user
+will paste into their own terminal in their shell's syntax. Use the machine's
+own conventions for Python workflow and locations. If machine context is missing
+in a legacy instance, inspect the environment instead of inventing facts.
 
 ## Planning directory (`.plan/`) & Dumps (`.dumps/`)
 
@@ -52,6 +41,12 @@ Never create `plans/` or `.plans/`.
 
 ## Plan mode and goals
 
-- Anchor every requested task in a goal: use `get_goal`, then `create_goal` if none is active. Reuse the current goal; resume it with `update_goal` when the user asks to continue.
-- In plan mode, investigate and submit the complete plan through `exit_plan_mode`. Include using the goal to guide execution after approval; stay in plan mode until approval.
-- Use the actual tools, not code blocks pretending to call them. Keep work focused on the goal and mark it complete only after verifying the requested result.
+- Anchor every requested task in a goal: use `get_goal`, then `create_goal` if
+  none is active. Reuse the current goal; resume it with `update_goal` when the
+  user asks to continue.
+- In plan mode, investigate and submit the complete plan through
+  `exit_plan_mode`. Include using the goal to guide execution after approval;
+  stay in plan mode until approval.
+- Use the actual tools, not code blocks pretending to call them. Keep work
+  focused on the goal and mark it complete only after verifying the requested
+  result.
