@@ -38,7 +38,7 @@
     lang: en
     shortcuts:
       editor: ctrl+shift+g
-# Alex's local tools: remove these five alex-* rows to deactivate.
+# Alex's local tools: remove these alex-* rows to deactivate.
 - insert:
     - id: alex-file-observation-coverage
       name: /home/alex/git/my/rt/plugins/apply-patch/observation.mjs
@@ -57,7 +57,7 @@
       config:
         interval: 50
         unit: steps
-    - id: grammar-fix
-      name: /home/alex/Applications/dsh-grammar-fix/index.mjs
+    - id: alex-grammar-fix
+      name: /home/alex/git/my/rt/plugins/grammar-fix/index.mjs
     - id: antigravity-tui-login
       name: /home/alex/Applications/dsh-antigravity/tui-login.mjs
