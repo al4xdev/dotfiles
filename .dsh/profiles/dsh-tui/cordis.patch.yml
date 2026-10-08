@@ -1,0 +1,63 @@
+# Your patch layer for this dsh profile, applied after every bundle layer:
+# a top-level YAML array of loader patch entries (id-targeted config
+# overrides, disables, and insert lists; `!!js` expressions allowed).
+# O provider `strata-local` (servidor local) é injetado dinamicamente pelo
+# launcher do `dsht`; a descoberta decide o modelo. Aqui fica só o default
+# global da sessão — o `dsht` não fixa mais nenhum modelo.
+- id: agent-default-model
+  config:
+    provider: openai-codex
+    model: gpt-6.1-sol
+    reasoningEffort: low
+- id: session-title-llm
+  disabled: true
+- id: permission
+  config:
+    presets:
+      read-only:
+        sandbox: read-only
+        approval: ask
+      workspace-write:
+        sandbox: workspace-write
+        approval: ask
+      danger-full-access:
+        sandbox: danger-full-access
+        approval: never
+    defaultPreset: danger-full-access
+- id: sandbox-policy
+  config:
+    mode: danger-full-access
+    workspaceRoot: !!js process.cwd()
+- id: approval
+  config:
+    policy: never
+- id: dsh-tui
+  config:
+    fullscreen: true
+    terminalImages: true
+    lang: en
+    shortcuts:
+      editor: ctrl+shift+g
+# Alex's local tools: remove these five alex-* rows to deactivate.
+- insert:
+    - id: alex-file-observation-coverage
+      name: /home/alex/git/my/rt/plugins/apply-patch/observation.mjs
+    - id: alex-apply-patch
+      name: /home/alex/git/my/rt/plugins/apply-patch/index.mjs
+    - id: alex-workspace-context
+      name: /home/alex/git/my/rt/plugins/workspace-context/index.mjs
+    - id: alex-clipboard
+      name: /home/alex/git/my/rt/plugins/clipboard/index.mjs
+    - id: alex-trash
+      name: /home/alex/git/my/rt/plugins/trash/index.mjs
+    - id: alex-list
+      name: /home/alex/git/my/rt/plugins/list/index.mjs
+    - id: alex-shell-reconsider
+      name: /home/alex/git/my/rt/plugins/shell-reconsider/index.mjs
+      config:
+        interval: 50
+        unit: steps
+    - id: grammar-fix
+      name: /home/alex/Applications/dsh-grammar-fix/index.mjs
+    - id: antigravity-tui-login
+      name: /home/alex/Applications/dsh-antigravity/tui-login.mjs

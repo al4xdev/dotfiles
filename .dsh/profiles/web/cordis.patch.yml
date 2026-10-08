@@ -1,0 +1,92 @@
+# Your patch layer for this dsh profile, applied after every bundle layer:
+# a top-level YAML array of loader patch entries (id-targeted config
+# overrides, disables, and insert lists; `!!js` expressions allowed).
+#
+# Since dsh 0.2 this file IS the user settings layer: the old
+# ~/.dsh/settings.yaml is imported once and then renamed to
+# settings.yaml.imported, so per-plugin settings live here.
+
+# Local llama.cpp provider adapter (@deepseek-ai/dsh-llm-llamacpp): registers
+# the ISOLATED `llamacpp-local` route, with automatic native-tooling detection
+# (/props chat_template_caps), optional auth, vision and prompt-mode fallback.
+#
+# `toolCompat` is the compatibility layer for local models: it repairs
+# malformed tool-call JSON (trailing commas, single quotes, unquoted keys,
+# Python literals, truncation at finish_reason:length), resolves drifted tool
+# names against the tools actually offered (shell -> bash, read_file -> read,
+# str_replace_editor -> edit), and rescues calls the model printed as text
+# instead of through the native tool_calls channel.
+# `toolGuide` appends a short local-model tool-use cheat sheet to the prompt.
+# Alex's local tools: remove these five alex-* rows to deactivate.
+- insert:
+    - id: alex-file-observation-coverage
+      name: /home/alex/git/my/rt/plugins/apply-patch/observation.mjs
+    - id: alex-apply-patch
+      name: /home/alex/git/my/rt/plugins/apply-patch/index.mjs
+    - id: alex-workspace-context
+      name: /home/alex/git/my/rt/plugins/workspace-context/index.mjs
+    - id: alex-clipboard
+      name: /home/alex/git/my/rt/plugins/clipboard/index.mjs
+    - id: alex-trash
+      name: /home/alex/git/my/rt/plugins/trash/index.mjs
+    - id: alex-list
+      name: /home/alex/git/my/rt/plugins/list/index.mjs
+    - id: alex-shell-reconsider
+      name: /home/alex/git/my/rt/plugins/shell-reconsider/index.mjs
+      config:
+        interval: 50
+        unit: steps
+    - id: llm-llamacpp
+      name: '@deepseek-ai/dsh-llm-llamacpp'
+      config:
+        baseURL: http://127.0.0.1:8080
+        tooling: auto # auto | native | prompt
+        toolCompat: auto # auto/on = repair tool calls; off = raw passthrough
+        toolGuide: true
+        temperature: 1.0
+        maxTokens: 24576
+        models:
+          # id must be a model id the server accepts (GET /v1/models). The
+          # llama-server `--alias` shortens it; without --alias it is the GGUF
+          # path. `name` is only the picker label.
+          - id: /home/alex/.cache/huggingface/hub/models--EZForever--gemma-4-26B-A4B-it-qat-uncensored-heretic-UDmerge-GGUF/snapshots/9567a9ca99f1ee12c9d43082c7351f24b4feef63/gemma-4-26B-A4B-it-qat-uncensored-heretic-UDmerge-Q4_K_XXL.gguf
+            name: Gemma 4 26B Local
+            contextWindow: 65536
+            maxTokens: 24576
+            vision: true
+            temperature: 1.0
+          - id: peculiar-ragdoll/Dirk-Qwen3.8-27B-GGUF
+            name: Qwen3.8 27B Local (Dirk)
+            contextWindow: 62464
+            maxTokens: 24576
+            vision: true
+            temperature: 0.8
+- id: ui-settings-general
+  name: "@deepseek-ai/dsh-client-ui-settings-general"
+  config:
+    welcomeNoticeVersion: 2026-09-28.1
+# DeepSeek stays the default model; the local model is opt-in from the picker.
+- id: agent-default-model
+  name: "@deepseek-ai/dsh-agent-default-model"
+  config:
+    provider: deepseek-official
+    model: deepseek-flash
+    reasoningEffort: high
+- id: permission
+  name: "@deepseek-ai/dsh-permission-presets"
+  config:
+    presets:
+      read-only:
+        sandbox: read-only
+        approval: ask
+      workspace-write:
+        sandbox: workspace-write
+        approval: ask
+      danger-full-access:
+        sandbox: danger-full-access
+        approval: never
+    defaultPreset: danger-full-access
+- id: ui-theme
+  name: "@deepseek-ai/dsh-client-ui-theme"
+  config:
+    preference: dark

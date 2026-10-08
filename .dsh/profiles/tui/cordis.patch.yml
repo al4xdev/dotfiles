@@ -1,0 +1,22 @@
+# Your patch layer for this dsh profile, applied after every bundle layer:
+# a top-level YAML array of loader patch entries (id-targeted config
+# overrides, disables, and insert lists; `!!js` expressions allowed).
+# Alex's local tools: remove this insert entry to deactivate.
+- insert:
+    - id: alex-file-observation-coverage
+      name: /home/alex/git/my/rt/plugins/apply-patch/observation.mjs
+    - id: alex-apply-patch
+      name: /home/alex/git/my/rt/plugins/apply-patch/index.mjs
+    - id: alex-workspace-context
+      name: /home/alex/git/my/rt/plugins/workspace-context/index.mjs
+    - id: alex-clipboard
+      name: /home/alex/git/my/rt/plugins/clipboard/index.mjs
+    - id: alex-trash
+      name: /home/alex/git/my/rt/plugins/trash/index.mjs
+    - id: alex-list
+      name: /home/alex/git/my/rt/plugins/list/index.mjs
+    - id: alex-shell-reconsider
+      name: /home/alex/git/my/rt/plugins/shell-reconsider/index.mjs
+      config:
+        interval: 50
+        unit: steps
