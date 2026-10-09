@@ -2,8 +2,11 @@
   "name": "dsh-profile-dsh-tui",
   "private": true,
   "dependencies": {
-    "@deepseek-ai/dsh-llm-pi-ai-antigravity": "link:/home/alex/Applications/dsh-antigravity",
-    "@deepseek-harness-tui/dsh-tui": "0.14.0"
+    "@deepseek-ai/dsh-agent": "0.2.0-rc.2",
+    "@deepseek-ai/dsh-agent-preset": "0.2.0-rc.2",
+    "@deepseek-ai/dsh-agent-preset-registry": "0.2.0-rc.2",
+    "@deepseek-ai/dsh-llm-pi-ai-antigravity": "link:/home/alex/git/my/dsh-customs/plugins/dsh-antigravity",
+    "@deepseek-harness-tui/dsh-tui": "link:/home/alex/git/my/dsh-customs/frontend/dsh-tui"
   },
   "dsh": {
     "profile": {

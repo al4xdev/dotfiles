@@ -166,3 +166,6 @@ approval_mode = "approve"
 
 [notice]
 hide_rate_limit_model_nudge = true
+
+[realtime]
+voice = "arbor"

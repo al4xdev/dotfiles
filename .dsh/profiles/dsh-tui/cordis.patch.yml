@@ -11,6 +11,8 @@
     reasoningEffort: low
 - id: session-title-llm
   disabled: true
+- id: plan-mode
+  disabled: true
 - id: permission
   config:
     presets:
@@ -35,31 +37,50 @@
   config:
     fullscreen: true
     terminalImages: true
+    externalPlanCommand: true
     lang: en
+    companion:
+      skin: whaleGirl
     shortcuts:
       editor: ctrl+shift+g
 # Alex's local tools: remove these alex-* rows to deactivate.
 - insert:
+    - id: preset-standard
+      name: '@deepseek-ai/dsh-agent-preset'
+      config:
+        id: standard
+        order: 1
+        plugins:
+          - id: standard-managed-plugins
+            name: '@deepseek-ai/cordis-plugin-include'
+            config:
+              path: /home/alex/.dsh/profiles/dsh-tui/standard-managed-plugins.yml
     - id: alex-file-observation-coverage
-      name: /home/alex/git/my/rt/plugins/apply-patch/observation.mjs
+      name: /home/alex/git/my/dsh-customs/plugins/apply-patch/observation.mjs
     - id: alex-apply-patch
-      name: /home/alex/git/my/rt/plugins/apply-patch/index.mjs
+      name: /home/alex/git/my/dsh-customs/plugins/apply-patch/index.mjs
     - id: alex-workspace-context
-      name: /home/alex/git/my/rt/plugins/workspace-context/index.mjs
+      name: /home/alex/git/my/dsh-customs/plugins/workspace-context/index.mjs
     - id: alex-project-mcp
-      name: /home/alex/git/my/rt/plugins/project-mcp/index.mjs
+      name: /home/alex/git/my/dsh-customs/plugins/project-mcp/index.mjs
     - id: alex-clipboard
-      name: /home/alex/git/my/rt/plugins/clipboard/index.mjs
+      name: /home/alex/git/my/dsh-customs/plugins/clipboard/index.mjs
     - id: alex-trash
-      name: /home/alex/git/my/rt/plugins/trash/index.mjs
+      name: /home/alex/git/my/dsh-customs/plugins/trash/index.mjs
     - id: alex-list
-      name: /home/alex/git/my/rt/plugins/list/index.mjs
+      name: /home/alex/git/my/dsh-customs/plugins/list/index.mjs
     - id: alex-shell-reconsider
-      name: /home/alex/git/my/rt/plugins/shell-reconsider/index.mjs
+      name: /home/alex/git/my/dsh-customs/plugins/shell-reconsider/index.mjs
       config:
         interval: 50
         unit: steps
     - id: alex-grammar-fix
-      name: /home/alex/git/my/rt/plugins/grammar-fix/index.mjs
+      name: /home/alex/git/my/dsh-customs/plugins/grammar-fix/index.mjs
+    - id: alex-managed-plans
+      name: /home/alex/git/my/dsh-customs/plugins/managed-plans/index.mjs
+      config:
+        wakeAgent: true
+    - id: alex-managed-plans-tui
+      name: /home/alex/git/my/dsh-customs/plugins/managed-plans/tui.mjs
     - id: antigravity-tui-login
-      name: /home/alex/Applications/dsh-antigravity/tui-login.mjs
+      name: /home/alex/git/my/dsh-customs/plugins/dsh-antigravity/tui-login.mjs
