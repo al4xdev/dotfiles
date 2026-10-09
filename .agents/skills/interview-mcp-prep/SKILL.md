@@ -8,8 +8,7 @@ description: Prepare for fast English WhatsApp or chat interviews using Alexsand
 Prepare once per interview session; then answer each incoming question quickly.
 
 The private career archive checkout's `.agents/mcp.json` defines the career-archive
-and `adb` MCP servers used here. The restricted server remains disabled until its
-approval boundary is restored; never enable it merely to satisfy this skill.
+and `adb` MCP servers used here.
 
 ## Prepare the context
 
