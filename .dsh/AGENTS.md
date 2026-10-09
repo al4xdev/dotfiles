@@ -23,6 +23,10 @@ will paste into their own terminal in their shell's syntax. Use the machine's
 own conventions for Python workflow and locations. If machine context is missing
 in a legacy instance, inspect the environment instead of inventing facts.
 
+Package directories under `~/.dsh/profiles` are symlinks into the npx install.
+`grep` and `glob` do not follow symlinks, so an empty result in that tree means
+"not looked", not "absent" — resolve the real path before concluding.
+
 ## Planning directory (`.plan/`) & Dumps (`.dumps/`)
 
 The only canonical planning directory is `.plan/` (singular, with leading dot).
