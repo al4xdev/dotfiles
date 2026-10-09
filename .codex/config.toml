@@ -109,6 +109,9 @@ trust_level = "trusted"
 [projects."/home/alex/git/my/yfbr36"]
 trust_level = "trusted"
 
+[projects."/home/alex/git/my/ygo-deck"]
+trust_level = "trusted"
+
 [tui]
 screen_reader_detection_done = true
 

@@ -27,21 +27,10 @@ Package directories under `~/.dsh/profiles` are symlinks into the npx install.
 `grep` and `glob` do not follow symlinks, so an empty result in that tree means
 "not looked", not "absent" — resolve the real path before concluding.
 
-## Planning directory (`.plan/`) & Dumps (`.dumps/`)
+## Ephemeral dumps (`.dumps/`)
 
-The only canonical planning directory is `.plan/` (singular, with leading dot).
-Never create `plans/` or `.plans/`.
-
-```text
-.plan/
-├── backlog/       # Future ideas with no active work
-├── closed/        # Completed tasks and architectural decisions
-├── para-o-dono/   # Decisions blocked on owner input
-└── tasks/         # Active work currently under way
-```
-
-- Ephemeral scratch, curl replays, transcripts, and temporary reports belong in
-  `.dumps/` (e.g. `.dumps/tasks/`), which must be gitignored and local only.
+Ephemeral scratch, curl replays, transcripts, and temporary reports belong in
+`.dumps/` (e.g. `.dumps/tasks/`), which must be gitignored and local only.
 
 ## Plan mode and goals
 
