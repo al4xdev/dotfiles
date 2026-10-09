@@ -1,6 +1,6 @@
 ---
 name: playwright-mobile-media
-description: Automate and audit mobile web interfaces with Playwright, including touch gestures, reproducible screenshots, short videos, README GIFs, visual-regression evidence, console/network inspection, and viewport-specific bug reproduction. Use when Codex needs to inspect a web UI as a phone, demonstrate mobile interactions, create polished product media, or verify a visual fix frame by frame.
+description: Automate and audit mobile web interfaces with Playwright, including touch gestures, reproducible screenshots, short videos, README GIFs, visual-regression evidence, console/network inspection, and viewport-specific bug reproduction. Use when you need to inspect a web UI as a phone, demonstrate mobile interactions, create polished product media, or verify a visual fix frame by frame.
 ---
 
 # Playwright Mobile Media

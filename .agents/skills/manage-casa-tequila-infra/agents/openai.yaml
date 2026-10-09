@@ -1,0 +1,4 @@
+interface:
+  display_name: "Infra Casa de Tequila"
+  short_description: "Opera Firebase, Samba e HA da Casa de Tequila"
+  default_prompt: "Use $manage-casa-tequila-infra para acessar e operar com segurança a infraestrutura Firebase, Samba e Home Assistant do aplicativo."

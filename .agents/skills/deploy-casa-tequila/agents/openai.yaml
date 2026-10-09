@@ -1,0 +1,4 @@
+interface:
+  display_name: "Deploy Casa de Tequila"
+  short_description: "Build e deploy transacional do app no HA"
+  default_prompt: "Use $deploy-casa-tequila para testar, gerar e publicar uma nova versão do aplicativo no Home Assistant."
