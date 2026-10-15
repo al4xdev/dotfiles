@@ -32,7 +32,6 @@
 ## Loose System and Terminal configurations
 !/.bashrc
 !/.config/starship.toml
-!/.config/mimeapps.list
 
 ## Claude CLI specific rules (Only skills and CLAUDE.md)
 !/.claude/
