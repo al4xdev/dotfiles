@@ -139,3 +139,5 @@
 .claude/skills/synced/
 .claude/skills/.trash/
 .config/my_scripts/grammar-fix-editor.sh
+.config/my_scripts/keyring-unlock-startup.py
+.config/my_scripts/keyring-unlock-startup.sh
