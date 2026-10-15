@@ -1,0 +1,591 @@
+#!/usr/bin/env python3
+"""Exporta pra PDF ou PNG o que o md-kitty renderiza no terminal.
+
+Nao reimplementa nada: chama o proprio md-kitty com COLUMNS/FORCE_COLOR fixos,
+captura o ANSI que ele emite e converte pra HTML com o tema do kitty. Quem
+renderiza continua sendo o md-kitty, entao a calibragem dele nunca diverge daqui.
+
+PDF pagina em A4; PNG sai numa tira unica, que e o unico formato que o Teams
+aceita colar (ele ignora arquivo no clipboard, so trata imagem).
+"""
+import argparse
+import base64
+import glob
+import hashlib
+import json
+import os
+import re
+import shutil
+import subprocess
+import sys
+import tempfile
+import urllib.request
+
+MD_KITTY = os.environ.get(
+    'GW_MD_KITTY', os.path.expanduser('~/.config/my_scripts/md-kitty'))
+# Pasta fixa em /tmp: da pra deixar um atalho no Nautilus e arrastar de la pro
+# Teams, que e o unico jeito dele aceitar um arquivo. O /tmp some sozinho.
+EXPORT_DIR = os.environ.get('GW_EXPORT_DIR', '/tmp/pdf_copy')
+# Espelha as constantes do md-kitty (so leitura, ele continua o dono do cache).
+CACHE_DIR = os.path.expanduser('~/.cache/md_kitty_mermaid')
+MERMAID_RE = re.compile(r'```mermaid\s*\n(.*?)```', re.DOTALL)
+
+KITTY_CONF = os.path.expanduser('~/.config/kitty/kitty.conf')
+FALLBACK_THEME = {
+    'background': '#1e1e2e',
+    'foreground': '#cdd6f4',
+    'colors': [
+        '#45475a', '#f38ba8', '#a6e3a1', '#f9e2af',
+        '#89b4fa', '#f5c2e7', '#94e2d5', '#bac2de',
+        '#585b70', '#f38ba8', '#a6e3a1', '#f9e2af',
+        '#89b4fa', '#f5c2e7', '#94e2d5', '#a6adc8',
+    ],
+}
+FONT_STACK = ("'JetBrainsMono Nerd Font Mono', 'JetBrains Mono', "
+              "'DejaVu Sans Mono', monospace")
+
+PAGE_TEMPLATE = """<!doctype html>
+<html><head><meta charset="utf-8"><title>gw</title>
+<style>
+%(page_css)s
+html, body { background: %(bg)s; margin: 0; padding: 0; }
+body {
+  %(body_css)s
+  color: %(fg)s;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+pre.gw {
+  font-family: %(font)s;
+  font-size: %(size)s;
+  line-height: %(line_height)s;
+  font-variant-ligatures: none;
+  color: %(fg)s;
+  margin: 0;
+  white-space: pre;
+  tab-size: 4;
+}
+.mermaid { margin: 6pt 0; text-align: center; break-inside: avoid; }
+.mermaid img { max-width: 100%%; height: auto; }
+%(extra_css)s
+</style></head>
+<body>%(body)s</body></html>
+"""
+
+ANSI_TO_HTML = r"""
+import io
+import json
+import sys
+from rich.console import Console
+from rich.text import Text
+from rich.terminal_theme import TerminalTheme
+
+def _rgb(value):
+    value = value.lstrip('#')
+    return tuple(int(value[i:i + 2], 16) for i in (0, 2, 4))
+
+spec = json.load(open(sys.argv[1], 'r', encoding='utf-8'))
+palette = spec['theme']
+theme = TerminalTheme(
+    _rgb(palette['background']),
+    _rgb(palette['foreground']),
+    [_rgb(c) for c in palette['colors'][:8]],
+    [_rgb(c) for c in palette['colors'][8:16]],
+)
+
+fragments = []
+for path in spec['captures']:
+    with open(path, 'r', encoding='utf-8') as f:
+        ansi = f.read()
+    console = Console(record=True, width=spec['width'], file=io.StringIO(),
+                      force_terminal=True, color_system='truecolor')
+    console.print(Text.from_ansi(ansi), end='', soft_wrap=True)
+    fragments.append(console.export_html(
+        theme=theme, inline_styles=True, code_format='{code}'))
+
+with open(sys.argv[2], 'w', encoding='utf-8') as f:
+    json.dump(fragments, f)
+"""
+
+
+def load_theme():
+    theme = {'background': FALLBACK_THEME['background'],
+             'foreground': FALLBACK_THEME['foreground'],
+             'colors': list(FALLBACK_THEME['colors'])}
+    try:
+        with open(KITTY_CONF, 'r', encoding='utf-8') as f:
+            conf = f.read()
+    except OSError:
+        return theme
+
+    def grab(key):
+        m = re.search(r'^\s*%s\s+(#[0-9a-fA-F]{6})\s*$' % key, conf, re.MULTILINE)
+        return m.group(1).lower() if m else None
+
+    for key in ('background', 'foreground'):
+        value = grab(key)
+        if value:
+            theme[key] = value
+    for i in range(16):
+        value = grab('color%d' % i)
+        if value:
+            theme['colors'][i] = value
+    return theme
+
+
+def capture_ansi(chunk_path, width):
+    """Roda o md-kitty de verdade e captura o ANSI que ele imprime."""
+    env = dict(os.environ)
+    env['COLUMNS'] = str(width)
+    env['FORCE_COLOR'] = '1'
+    env['COLORTERM'] = 'truecolor'
+    env.setdefault('TERM', 'xterm-256color')
+    proc = subprocess.run([MD_KITTY, chunk_path], capture_output=True, env=env)
+    if proc.returncode != 0:
+        sys.stderr.write(proc.stderr.decode('utf-8', 'replace'))
+        return None
+    return proc.stdout.decode('utf-8', 'replace')
+
+
+def mermaid_png(diagram_code, width):
+    """Pega o PNG do cache do md-kitty; se faltar, deixa ele gerar."""
+    digest = hashlib.md5(diagram_code.encode('utf-8')).hexdigest()
+    png_path = os.path.join(CACHE_DIR, '%s.png' % digest)
+    if os.path.exists(png_path):
+        return png_path
+    with tempfile.NamedTemporaryFile('w', suffix='.md', delete=False,
+                                     encoding='utf-8') as tmp:
+        tmp.write('```mermaid\n%s```\n' % diagram_code)
+        tmp_path = tmp.name
+    try:
+        env = dict(os.environ)
+        env['COLUMNS'] = str(width)
+        subprocess.run([MD_KITTY, tmp_path], capture_output=True, env=env)
+    finally:
+        os.unlink(tmp_path)
+    return png_path if os.path.exists(png_path) else None
+
+
+def find_chrome():
+    env = os.environ.get('GW_CHROME')
+    if env:
+        return env
+    for name in ('google-chrome', 'google-chrome-stable', 'chromium',
+                 'chromium-browser', 'microsoft-edge-stable', 'microsoft-edge'):
+        found = shutil.which(name)
+        if found:
+            return found
+    shells = sorted(glob.glob(os.path.expanduser(
+        '~/.cache/puppeteer/chrome-headless-shell/*/*/chrome-headless-shell')))
+    return shells[-1] if shells else None
+
+
+def unique_path(directory, stem, ext):
+    """<nome>.<ext>, <nome>-1.<ext>, <nome>-2.<ext>... sem sobrescrever."""
+    candidate = os.path.join(directory, '%s.%s' % (stem, ext))
+    n = 0
+    while os.path.exists(candidate):
+        n += 1
+        candidate = os.path.join(directory, '%s-%d.%s' % (stem, n, ext))
+    return candidate
+
+
+def png_size(path):
+    """Le largura/altura direto do IHDR, sem depender de lib de imagem."""
+    with open(path, 'rb') as f:
+        head = f.read(24)
+    return int.from_bytes(head[16:20], 'big'), int.from_bytes(head[20:24], 'big')
+
+
+def pdf_metrics(cols, landscape):
+    margin_mm = 10
+    page_mm = 297 if landscape else 210
+    usable_pt = (page_mm - 2 * margin_mm) / 25.4 * 72
+    # A JetBrains Mono avanca 0.6em por celula: encolhe a fonte ate caber N colunas.
+    font_pt = min(10.0, usable_pt / (cols * 0.6))
+    return margin_mm, page_mm, font_pt
+
+
+def build_html(blocks, theme, cols, landscape, page_height_mm=None, measure=False):
+    margin_mm, page_mm, font_pt = pdf_metrics(cols, landscape)
+    if measure:
+        page_css = ''
+        body_css = 'padding: %dmm; width: %dmm;' % (margin_mm, page_mm - 2 * margin_mm)
+    else:
+        if page_height_mm:
+            size = '%dmm %.2fmm' % (page_mm, page_height_mm)
+        else:
+            size = 'A4 landscape' if landscape else 'A4'
+        page_css = '@page { size: %s; margin: 0; }' % size
+        body_css = 'padding: %dmm;' % margin_mm
+    return PAGE_TEMPLATE % {
+        'page_css': page_css,
+        'bg': theme['background'],
+        'fg': theme['foreground'],
+        'body_css': body_css,
+        'font': FONT_STACK,
+        'size': '%.2fpt' % font_pt,
+        'line_height': '1.22',
+        'extra_css': '',
+        'body': '\n'.join(render_blocks(blocks)),
+    }
+
+
+def measure_height_mm(chrome, html, work, raw, cols, landscape, bg):
+    """Renderiza sem paginacao, recorta o fundo e devolve a altura do conteudo.
+
+    Estimar analiticamente erra por alguns pixels e sobra faixa preta no fim da
+    pagina unica, entao vale a passada extra do Chrome pra medir de verdade.
+    """
+    if not shutil.which('convert'):
+        return None
+    margin_mm, page_mm, font_pt = pdf_metrics(cols, landscape)
+    width_px = round(page_mm / 25.4 * 96)
+    est = estimate_png_height(raw, cols, font_pt * 96 / 72,
+                              round(margin_mm / 25.4 * 96))
+    probe_html = os.path.join(work, 'measure.html')
+    with open(probe_html, 'w', encoding='utf-8') as f:
+        f.write(html)
+    probe_png = os.path.join(work, 'measure.png')
+    ok, _ = html_to_png(chrome, probe_html, probe_png, width_px,
+                        int(est * 1.5) + 400, bg, scale=1, trim=False)
+    if not ok:
+        return None
+    proc = subprocess.run(
+        ['convert', probe_png, '-background', bg, '-trim', '+repage',
+         '-format', '%h', 'info:'], capture_output=True, text=True)
+    if proc.returncode != 0 or not proc.stdout.strip().isdigit():
+        return None
+    content_px = int(proc.stdout.strip())
+    return content_px / 96 * 25.4 + 2 * margin_mm + 2
+
+
+def build_png_html(blocks, theme, cols, font_px, pad_px):
+    """Tira continua, sem paginacao: largura travada em N colunas."""
+    content_px = round(cols * 0.6 * font_px)
+    return PAGE_TEMPLATE % {
+        'page_css': '',
+        'bg': theme['background'],
+        'fg': theme['foreground'],
+        'body_css': ('padding: %dpx; width: %dpx; box-sizing: content-box;'
+                     % (pad_px, content_px)),
+        'font': FONT_STACK,
+        'size': '%dpx' % font_px,
+        'line_height': '1.3',
+        'extra_css': '.mermaid img { max-width: %dpx; }' % content_px,
+        'body': '\n'.join(render_blocks(blocks)),
+    }, content_px
+
+
+def render_blocks(blocks):
+    out = []
+    for kind, payload in blocks:
+        if kind == 'html':
+            out.append('<pre class="gw">%s</pre>' % payload)
+        else:
+            out.append('<div class="mermaid"><img src="data:image/png;base64,%s"></div>'
+                       % payload)
+    return out
+
+
+def estimate_png_height(blocks_raw, cols, font_px, pad_px):
+    """Altura aproximada da tira, pra dimensionar a janela do Chrome."""
+    content_px = round(cols * 0.6 * font_px)
+    total = 2 * pad_px
+    for kind, payload in blocks_raw:
+        if kind == 'lines':
+            total += payload * font_px * 1.3
+        else:
+            w, h = payload
+            total += (content_px * h / w if w else 200) + 16
+    return int(total + 80)
+
+
+def html_to_pdf(chrome, html_path, pdf_path):
+    with tempfile.TemporaryDirectory(prefix='gw-chrome-') as profile:
+        tail = [
+            '--disable-gpu',
+            '--no-first-run',
+            '--no-default-browser-check',
+            '--disable-extensions',
+            '--password-store=basic',
+            '--user-data-dir=%s' % profile,
+            '--no-pdf-header-footer',
+            '--print-to-pdf-no-header',
+            '--print-to-pdf=%s' % pdf_path,
+            'file://%s' % urllib.request.pathname2url(html_path),
+        ]
+        headless = ('--headless' if 'headless-shell' in os.path.basename(chrome)
+                    else '--headless=new')
+        proc = None
+        for extra in ([], ['--no-sandbox']):
+            proc = subprocess.run([chrome, headless] + extra + tail,
+                                  capture_output=True, text=True)
+            if proc.returncode == 0 and os.path.exists(pdf_path):
+                return True, ''
+        return False, (proc.stderr or proc.stdout).strip()
+
+
+def html_to_png(chrome, html_path, png_path, width_css, height_css, bg,
+                scale=2, trim=True):
+    """Screenshot da tira inteira; o trim corta a sobra da altura estimada."""
+    height_css = min(height_css, 30000 if not trim else 8000)
+    with tempfile.TemporaryDirectory(prefix='gw-chrome-') as profile:
+        args = [
+            chrome,
+            ('--headless' if 'headless-shell' in os.path.basename(chrome)
+             else '--headless=new'),
+            '--disable-gpu',
+            '--no-first-run',
+            '--no-default-browser-check',
+            '--disable-extensions',
+            '--password-store=basic',
+            '--hide-scrollbars',
+            '--force-device-scale-factor=%d' % scale,
+            '--user-data-dir=%s' % profile,
+            '--window-size=%d,%d' % (width_css, height_css),
+            '--screenshot=%s' % png_path,
+            'file://%s' % urllib.request.pathname2url(html_path),
+        ]
+        proc = None
+        for extra in ([], ['--no-sandbox']):
+            proc = subprocess.run(args[:2] + extra + args[2:],
+                                  capture_output=True, text=True)
+            if proc.returncode == 0 and os.path.exists(png_path):
+                break
+        else:
+            return False, (proc.stderr or proc.stdout).strip()
+
+    if trim and shutil.which('convert'):
+        trimmed = subprocess.run(
+            ['convert', png_path, '-background', bg, '-trim', '+repage',
+             '-bordercolor', bg, '-border', '28', png_path],
+            capture_output=True, text=True)
+        if trimmed.returncode != 0:
+            sys.stderr.write('md-export: trim falhou, PNG vai sem recorte\n')
+    return True, ''
+
+
+def to_clipboard(path, mode, fmt):
+    if mode == 'none':
+        return True, 'desligado'
+    if not shutil.which('wl-copy'):
+        return False, 'wl-copy nao encontrado'
+
+    if mode == 'auto':
+        # PNG so existe pra colar, entao vai pro clipboard. PDF o fluxo e
+        # arrastar da pasta, entao nao vale torrar o clipboard do usuario.
+        if fmt != 'png':
+            return True, 'intacto (pdf: arraste de %s)' % EXPORT_DIR
+        mode = 'image'
+
+    if mode == 'image':
+        with open(path, 'rb') as f:
+            payload, mime = f.read(), 'image/png'
+    elif mode == 'path':
+        payload, mime = path.encode('utf-8'), 'text/plain'
+    else:
+        uri = 'file://' + urllib.request.pathname2url(path)
+        if mode == 'gnome':
+            payload, mime = ('copy\n' + uri).encode('utf-8'), 'x-special/gnome-copied-files'
+        else:
+            payload, mime = (uri + '\r\n').encode('utf-8'), 'text/uri-list'
+
+    # wl-copy faz fork e o daemon segue vivo servindo o clipboard; capturar
+    # stdout/stderr trava o run() lendo o pipe que esse filho mantem aberto.
+    proc = subprocess.run(['wl-copy', '--type', mime], input=payload,
+                          stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    if proc.returncode != 0:
+        return False, 'wl-copy saiu com codigo %d' % proc.returncode
+    return True, mime
+
+
+def parse_args(argv):
+    p = argparse.ArgumentParser(
+        prog='md-export',
+        description='Exporta o render do md-kitty pra PDF ou PNG '
+                    '(usado por: gw --export pdf|png).')
+    p.add_argument('file', nargs='?', default='-', help='arquivo .md (ou - para stdin)')
+    p.add_argument('-f', '--format', choices=['pdf', 'png'], default='pdf',
+                   help='pdf pagina em A4; png sai numa tira unica (padrao: pdf)')
+    p.add_argument('-o', '--out', metavar='PATH',
+                   help='caminho de saida (padrao: %s/<nome>.<fmt>)' % EXPORT_DIR)
+    p.add_argument('--width', type=int, default=100, metavar='N',
+                   help='largura em colunas do render (padrao: 100)')
+    p.add_argument('--font-px', type=int, default=15, metavar='N',
+                   help='tamanho da fonte no PNG; controla a resolucao (padrao: 15)')
+    p.add_argument('--landscape', action='store_true', help='A4 deitada (so pdf)')
+    p.add_argument('--one-page', action='store_true',
+                   help='pdf numa pagina unica, sem quebra (altura medida do conteudo)')
+    p.add_argument('--copy-mode',
+                   choices=['auto', 'image', 'path', 'uri', 'gnome', 'none'],
+                   default='auto',
+                   help='auto = png vai pro clipboard, pdf nao mexe (padrao: auto)')
+    p.add_argument('--no-copy', action='store_true', help='nao mexe no clipboard')
+    p.add_argument('--keep-html', action='store_true',
+                   help='guarda o HTML intermediario ao lado da saida')
+    p.add_argument('--open', action='store_true', help='abre o resultado no visualizador')
+    args = p.parse_args(argv)
+    if args.no_copy:
+        args.copy_mode = 'none'
+    return args
+
+
+def main():
+    args = parse_args(sys.argv[1:])
+
+    if not os.path.exists(MD_KITTY):
+        sys.exit('md-export: md-kitty nao encontrado em %s (use GW_MD_KITTY)' % MD_KITTY)
+
+    if args.file and args.file != '-':
+        try:
+            with open(args.file, 'r', encoding='utf-8') as f:
+                content = f.read()
+        except Exception as e:
+            sys.exit('md-export: erro lendo %s: %s' % (args.file, e))
+        stem = os.path.splitext(os.path.basename(args.file))[0]
+    else:
+        content = sys.stdin.read()
+        stem = 'stdin'
+
+    theme = load_theme()
+    parts = MERMAID_RE.split(content)
+
+    work = tempfile.mkdtemp(prefix='gw-mdpdf-')
+    try:
+        captures, blocks = [], []
+        for i, part in enumerate(parts):
+            if i % 2 == 0:
+                if not part.strip():
+                    continue
+                chunk = os.path.join(work, 'chunk%03d.md' % i)
+                with open(chunk, 'w', encoding='utf-8') as f:
+                    f.write(part)
+                ansi = capture_ansi(chunk, args.width)
+                if ansi is None:
+                    sys.exit('md-export: md-kitty falhou no bloco %d' % i)
+                cap = os.path.join(work, 'cap%03d.ansi' % i)
+                with open(cap, 'w', encoding='utf-8') as f:
+                    f.write(ansi)
+                blocks.append(('html', len(captures)))
+                captures.append(cap)
+            else:
+                png = mermaid_png(part, args.width)
+                if png:
+                    blocks.append(('png', png))
+                else:
+                    print('md-export: mermaid falhou, bloco vira texto', file=sys.stderr)
+                    chunk = os.path.join(work, 'chunk%03d.md' % i)
+                    with open(chunk, 'w', encoding='utf-8') as f:
+                        f.write('```mermaid\n%s```\n' % part)
+                    ansi = capture_ansi(chunk, args.width) or ''
+                    cap = os.path.join(work, 'cap%03d.ansi' % i)
+                    with open(cap, 'w', encoding='utf-8') as f:
+                        f.write(ansi)
+                    blocks.append(('html', len(captures)))
+                    captures.append(cap)
+
+        fragments = []
+        if captures:
+            spec_path = os.path.join(work, 'spec.json')
+            out_path = os.path.join(work, 'fragments.json')
+            with open(spec_path, 'w', encoding='utf-8') as f:
+                json.dump({'captures': captures, 'width': args.width,
+                           'theme': theme}, f)
+            helper = os.path.join(work, 'ansi2html.py')
+            with open(helper, 'w', encoding='utf-8') as f:
+                f.write(ANSI_TO_HTML)
+            proc = subprocess.run(['uv', 'run', '--with', 'rich', 'python3',
+                                   helper, spec_path, out_path])
+            if proc.returncode != 0:
+                sys.exit('md-export: conversao ANSI->HTML falhou')
+            with open(out_path, 'r', encoding='utf-8') as f:
+                fragments = json.load(f)
+
+        assembled, raw = [], []
+        for kind, ref in blocks:
+            if kind == 'html':
+                assembled.append(('html', fragments[ref]))
+                with open(captures[ref], 'r', encoding='utf-8') as f:
+                    raw.append(('lines', f.read().count('\n') + 1))
+            else:
+                with open(ref, 'rb') as f:
+                    assembled.append(('png', base64.b64encode(f.read()).decode('ascii')))
+                raw.append(('img', png_size(ref)))
+
+        chrome = find_chrome()
+        if not chrome:
+            sys.exit('md-export: nenhum chrome/chromium/edge encontrado (defina GW_CHROME)')
+
+        fmt = args.format
+        if args.out:
+            out_path = os.path.abspath(args.out)
+            os.makedirs(os.path.dirname(out_path) or '.', exist_ok=True)
+        else:
+            os.makedirs(EXPORT_DIR, exist_ok=True)
+            out_path = unique_path(EXPORT_DIR, stem, fmt)
+
+        html_path = os.path.join(work, 'render.html')
+        if fmt == 'pdf':
+            page_h = None
+            if args.one_page:
+                probe = build_html(assembled, theme, args.width, args.landscape,
+                                   measure=True)
+                page_h = measure_height_mm(chrome, probe, work, raw, args.width,
+                                           args.landscape, theme['background'])
+                if page_h is None:
+                    print('md-export: nao consegui medir a altura, '
+                          'caindo pra A4 paginada', file=sys.stderr)
+                elif page_h > 5000:
+                    print('md-export: aviso, pagina de %.0fmm -- alguns leitores '
+                          'travam acima de ~5080mm' % page_h, file=sys.stderr)
+            html = build_html(assembled, theme, args.width, args.landscape,
+                              page_height_mm=page_h)
+            with open(html_path, 'w', encoding='utf-8') as f:
+                f.write(html)
+            ok, err = html_to_pdf(chrome, html_path, out_path)
+        else:
+            pad_px = 28
+            html, content_px = build_png_html(assembled, theme, args.width,
+                                              args.font_px, pad_px)
+            with open(html_path, 'w', encoding='utf-8') as f:
+                f.write(html)
+            height = estimate_png_height(raw, args.width, args.font_px, pad_px)
+            if height > 8000:
+                print('md-export: aviso, documento longo -- a tira vai ser cortada '
+                      'em 8000px de altura; considere --format pdf', file=sys.stderr)
+            ok, err = html_to_png(chrome, html_path, out_path,
+                                  content_px + 2 * pad_px, height,
+                                  theme['background'])
+        if not ok:
+            sys.exit('md-export: chrome falhou ao gerar o %s\n%s' % (fmt.upper(), err))
+
+        if args.keep_html:
+            kept = os.path.splitext(out_path)[0] + '.html'
+            shutil.copyfile(html_path, kept)
+            print('html: %s' % kept)
+
+        desc = '%s: %s (%.0f KB)' % (fmt, out_path, os.path.getsize(out_path) / 1024)
+        if fmt == 'png':
+            w, h = png_size(out_path)
+            desc += ' %dx%d' % (w, h)
+        print(desc)
+        if fmt == 'pdf' and args.one_page and page_h:
+            print('        pagina unica: %dmm x %.0fmm' % (
+                297 if args.landscape else 210, page_h))
+
+        ok, info = to_clipboard(out_path, args.copy_mode, fmt)
+        print(('clipboard: %s' % info) if ok else ('clipboard falhou: %s' % info),
+              file=sys.stdout if ok else sys.stderr)
+        if ok and info == 'text/plain':
+            print('        -> cole esse caminho no seletor de arquivo (Ctrl+L)')
+
+        if args.open:
+            subprocess.run(['xdg-open', out_path],
+                           stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    finally:
+        shutil.rmtree(work, ignore_errors=True)
+
+
+if __name__ == '__main__':
+    main()
