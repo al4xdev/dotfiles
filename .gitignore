@@ -134,3 +134,7 @@
 .dsh/sessions/
 .dsh/storages/
 .dsh/attachments/
+*.bak
+*.bak.*
+.claude/skills/synced/
+.claude/skills/.trash/
