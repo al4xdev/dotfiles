@@ -37,7 +37,7 @@
 # Quota resets use a separate24h cap; keep exactly one recovery engine.
 - id: llm-retry
   disabled: true
-# Harness recovery: reset hints never extend the shared cap (at most 60min); larger minimums suspend.
+# Harness recovery: provider reset hints are waited up to the shared 24h provider-wait cap; larger minimums suspend.
 - id: llm-pi-ai-antigravity
   config:
     webSearch: true
@@ -87,6 +87,13 @@
     publish: false
     publishIntervalMs: 500
     narrate: false
+# Pure API model: no harness identity or persona line in the system prompt; a
+# persona the owner wants goes visibly in his AGENTS.md. Replaces the bundle's
+# version-sniffing `!!js` config (0.2.x reads `personaPrefix`).
+- id: system-prompt
+  config:
+    includeHarnessIdentity: false
+    personaPrefix: ''
 # Alex's local tools: remove these alex-* rows to deactivate.
 - insert:
     - id: preset-standard
@@ -100,13 +107,13 @@
             config:
               path: ./standard-managed-plugins.yml
     - id: alex-llm-resilience
-      name: ../../../git/my/dsh-customs/plugins/llm-resilience/lib/index-v5-unified.mjs
+      name: ../../../git/my/dsh-customs/plugins/llm-resilience/lib/index-v6-unified.mjs
       config:
         {}
     - id: alex-codex-transient-close
       name: ../../../git/my/dsh-customs/plugins/codex-transient-close/index.mjs
     - id: alex-agent-self-heal
-      name: ../../../git/my/dsh-customs/plugins/agent-self-heal/lib/index-v6-unified.mjs
+      name: ../../../git/my/dsh-customs/plugins/agent-self-heal/lib/index-v7-unified.mjs
       config:
         {}
     - id: alex-session-bridge
@@ -163,8 +170,7 @@
           - id: persona
             name: '@deepseek-ai/dsh-persona'
             config:
-              suffix: Your working directory is {{cwd}}.
-              prefix: You are a coding agent powered by the {{model}} model.
+              prefix: ''
           - id: agent-instructions
             name: '@deepseek-ai/dsh-agent-instructions'
             config:
@@ -313,9 +319,7 @@
           - id: persona
             name: '@deepseek-ai/dsh-persona'
             config:
-              suffix: Your working directory is {{cwd}}.
-              prefix: >-
-                You are a coding agent powered by the {{model}} model.
+              prefix: ''
           - id: agent-instructions
             name: '@deepseek-ai/dsh-agent-instructions'
             config:
@@ -473,7 +477,7 @@
       - id: alex-research-standard-plugins
         name: "@deepseek-ai/cordis-plugin-include"
         config:
-          path: ./alex-research-4edb070dac963029.yml
+          path: ./alex-research-d41357da6b989a5e.yml
 - id: preset-ptc
   name: "@deepseek-ai/dsh-agent-preset"
   config:
@@ -483,7 +487,7 @@
       - id: alex-research-ptc-plugins
         name: "@deepseek-ai/cordis-plugin-include"
         config:
-          path: ./alex-research-661ef6977d746880.yml
+          path: ./alex-research-7545192a6e00f488.yml
 - id: preset-cordis
   name: "@deepseek-ai/dsh-agent-preset"
   config:
@@ -493,7 +497,7 @@
       - id: alex-research-cordis-plugins
         name: "@deepseek-ai/cordis-plugin-include"
         config:
-          path: ./alex-research-829daaec803d1450.yml
+          path: ./alex-research-1714c09e77f4a138.yml
 - id: preset-liangshen
   name: "@deepseek-ai/dsh-agent-preset"
   config:

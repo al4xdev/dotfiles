@@ -20,13 +20,13 @@
 # Alex's local tools: remove these five alex-* rows to deactivate.
 - insert:
     - id: alex-llm-resilience
-      name: ../../../git/my/dsh-customs/plugins/llm-resilience/lib/index-v5-unified.mjs
+      name: ../../../git/my/dsh-customs/plugins/llm-resilience/lib/index-v6-unified.mjs
       config:
         {}
     - id: alex-codex-transient-close
       name: ../../../git/my/dsh-customs/plugins/codex-transient-close/index.mjs
     - id: alex-agent-self-heal
-      name: ../../../git/my/dsh-customs/plugins/agent-self-heal/lib/index-v6-unified.mjs
+      name: ../../../git/my/dsh-customs/plugins/agent-self-heal/lib/index-v7-unified.mjs
       config:
         {}
     - id: alex-file-observation-coverage

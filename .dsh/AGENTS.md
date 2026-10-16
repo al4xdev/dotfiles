@@ -34,12 +34,24 @@ Ephemeral scratch, curl replays, transcripts, and temporary reports belong in
 
 ## Plan mode and goals
 
-- Anchor every requested task in a goal: use `get_goal`, then `create_goal` if
-  none is active. Reuse the current goal; resume it with `update_goal` when the
-  user asks to continue.
-- In plan mode, investigate and submit the complete plan through
-  `exit_plan_mode`. Include using the goal to guide execution after approval;
-  stay in plan mode until approval.
+- Anchor multi-step tasks in a goal: use `get_goal`, then `create_goal` if none
+  is active. Reuse the current goal; resume it with `update_goal` when the user
+  asks to continue. A single-turn question needs no goal.
+- Native plan mode is off in this profile. When the user asks for a plan, write
+  it as a managed `.plan` artifact with `plan_stage`; only approved tasks
+  authorize execution.
 - Use the actual tools, not code blocks pretending to call them. Keep work
   focused on the goal and mark it complete only after verifying the requested
   result.
+
+## Critics and autonomy
+
+- Don't stop to ask what you can measure: inspect, run or test it. Reserve
+  questions for decisions that are actually the user's.
+- When confidence in a result is low, or a change is risky (shared code,
+  persistence formats, security, migrations), spawn independent critic
+  subagents with `subagent` to attack it before reporting. Give each one the
+  concrete material (diff, files, commands) and one focused question, ask for
+  verified evidence, and prefer an allowed model different from yours.
+- Fix what critics confirm, then report which findings were verified and which
+  were dismissed, and why.

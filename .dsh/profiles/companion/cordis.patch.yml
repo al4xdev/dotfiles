@@ -14,6 +14,14 @@
   config:
     provider: google-antigravity
     model: gemini-3.8-flash-low
+# Pure API model: no harness identity or persona lines in the system prompt (the
+# companion preset has no persona row of its own, so these root keys are the only
+# source); anything the owner wants goes visibly in AGENTS-Companion.md.
+- id: system-prompt
+  config:
+    includeHarnessIdentity: false
+    personaPrefix: ''
+    personaSuffix: ''
 - id: session-persistence-jsonl
   config:
     root: /home/alex/.dsh/sessions
@@ -55,13 +63,13 @@
       - dsh.tail37b3d7.ts.net:8443
 - insert:
     - id: alex-llm-resilience
-      name: ../../../git/my/dsh-customs/plugins/llm-resilience/lib/index-v5-unified.mjs
+      name: ../../../git/my/dsh-customs/plugins/llm-resilience/lib/index-v6-unified.mjs
       config:
         {}
     - id: alex-codex-transient-close
       name: ../../../git/my/dsh-customs/plugins/codex-transient-close/index.mjs
     - id: alex-agent-self-heal
-      name: ../../../git/my/dsh-customs/plugins/agent-self-heal/lib/index-v6-unified.mjs
+      name: ../../../git/my/dsh-customs/plugins/agent-self-heal/lib/index-v7-unified.mjs
       config:
         {}
     - id: alex-music

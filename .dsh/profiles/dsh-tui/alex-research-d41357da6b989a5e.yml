@@ -2,4 +2,4 @@
 - id: standard-managed-plugins
   name: '@deepseek-ai/cordis-plugin-include'
   config:
-    path: ./alex-research-1bab589dfeff85cb.yml
+    path: ./alex-research-a2d9c20433f35a6f.yml
