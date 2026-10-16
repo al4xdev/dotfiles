@@ -39,7 +39,7 @@
   disabled: true
 - insert:
     - id: companion-session-controller
-      name: /home/alex/git/my/dsh-customs/plugins/companion-workspace/session-controller.mjs
+      name: ../../../git/my/dsh-customs/plugins/companion-workspace/session-controller.mjs
 - id: tool-fs
   disabled: true
 - id: tool-bash
@@ -54,17 +54,27 @@
     trustedHosts:
       - dsh.tail37b3d7.ts.net:8443
 - insert:
+    - id: alex-llm-resilience
+      name: ../../../git/my/dsh-customs/plugins/llm-resilience/lib/index-v5-unified.mjs
+      config:
+        {}
+    - id: alex-codex-transient-close
+      name: ../../../git/my/dsh-customs/plugins/codex-transient-close/index.mjs
+    - id: alex-agent-self-heal
+      name: ../../../git/my/dsh-customs/plugins/agent-self-heal/lib/index-v6-unified.mjs
+      config:
+        {}
     - id: alex-music
-      name: /home/alex/git/my/dsh-customs/plugins/music/index.mjs
+      name: ../../../git/my/dsh-customs/plugins/music/index.mjs
     - id: companion-oauth
-      name: /home/alex/git/my/dsh-customs/frontend/dsh-tui/lib/types/dsh-adapter/oauth/index.js
+      name: ../../../git/my/dsh-customs/frontend/dsh-tui/lib/types/dsh-adapter/oauth/index.js
       inject: [ llm, commands ]
       config:
         providers: [ openai-codex ]
     - id: companion-private-link
-      name: /home/alex/git/my/dsh-customs/tools/session-companion/connection.mjs
+      name: ../../../git/my/dsh-customs/tools/session-companion/connection.mjs
     - id: companion-catalog-api
-      name: /home/alex/git/my/dsh-customs/plugins/companion-api/index.mjs
+      name: ../../../git/my/dsh-customs/plugins/companion-api/index.mjs
       inject: [ typert, sessionPersistence ]
       config:
         localModels:
@@ -79,11 +89,11 @@
         order: 0
         plugins:
           - id: companion-session
-            name: /home/alex/git/my/dsh-customs/plugins/session/index.mjs
+            name: ../../../git/my/dsh-customs/plugins/session/index.mjs
             config:
               profile: companion
           - id: companion-workspace
-            name: /home/alex/git/my/dsh-customs/plugins/companion-workspace/index.mjs
+            name: ../../../git/my/dsh-customs/plugins/companion-workspace/index.mjs
             config:
               profile: companion
           - id: skill-filesystem
@@ -96,7 +106,7 @@
           - id: companion-files
             name: "@deepseek-ai/dsh-tool-fs"
           - id: companion-list
-            name: /home/alex/git/my/dsh-customs/plugins/list/index.mjs
+            name: ../../../git/my/dsh-customs/plugins/list/index.mjs
           - id: companion-bash
             name: "@deepseek-ai/dsh-tool-bash"
             config:
@@ -227,7 +237,7 @@
                       thresholdRatio: 0.8
                       retainRatio: 0.16
           - id: companion-session-create
-            name: /home/alex/git/my/dsh-customs/plugins/session-create/index.mjs
+            name: ../../../git/my/dsh-customs/plugins/session-create/index.mjs
             config:
               profile: companion
           - id: agent-instructions
@@ -242,7 +252,7 @@
             config:
               blockedAfterConsecutiveRounds: 3
           - id: companion-notifications
-            name: /home/alex/git/my/dsh-customs/plugins/companion-notifications/index.mjs
+            name: ../../../git/my/dsh-customs/plugins/companion-notifications/index.mjs
             config:
               profile: companion
           - id: tool-todo
@@ -250,13 +260,13 @@
             config:
               allowParallelInProgress: true
           - id: companion-download-tool
-            name: /home/alex/git/my/dsh-customs/plugins/companion-download/tool.mjs
+            name: ../../../git/my/dsh-customs/plugins/companion-download/tool.mjs
 - insert:
     - id: session-create-owner
-      name: /home/alex/git/my/dsh-customs/plugins/session-create/owner.mjs
+      name: ../../../git/my/dsh-customs/plugins/session-create/owner.mjs
 - insert:
     - id: companion-native-host
-      name: /home/alex/git/my/dsh-customs/plugins/companion-native-host/index.mjs
+      name: ../../../git/my/dsh-customs/plugins/companion-native-host/index.mjs
       config:
         enabled: true
         push:
@@ -269,20 +279,10 @@
           serviceAccountFile: '/home/alex/.config/dsh-companion/firebase/companion-fcm-sender.json'
 - id: llm-retry
   disabled: true
-- insert:
-    - id: alex-llm-resilience
-      name: /home/alex/git/my/dsh-customs/plugins/llm-resilience/lib/index-v5-unified.mjs
-      config: {}
-    - id: alex-codex-transient-close
-      name: /home/alex/git/my/dsh-customs/plugins/codex-transient-close/index.mjs
-      config: {}
-    - id: alex-agent-self-heal
-      name: /home/alex/git/my/dsh-customs/plugins/agent-self-heal/lib/index-v6-unified.mjs
-      config: {}
 # BEGIN alex-research activation v1
 - insert:
     - id: alex-research
-      name: /home/alex/git/my/dsh-customs/plugins/research/index.mjs
+      name: ../../../git/my/dsh-customs/plugins/research/index.mjs
 - id: llm-pi-ai
   name: "@deepseek-ai/dsh-llm-pi-ai"
   config:
@@ -337,7 +337,7 @@
 # END alex-research activation v1
 - insert:
     - id: llm-pi-ai-antigravity
-      name: /home/alex/git/my/dsh-customs/plugins/dsh-antigravity/lib/index.js
+      name: ../../../git/my/dsh-customs/plugins/dsh-antigravity/lib/index.js
       config:
         oauthCredentialEnv: GOOGLE_ANTIGRAVITY_OAUTH_CREDENTIAL
         oauthClientConfigRef: GOOGLE_ANTIGRAVITY_OAUTH_CLIENT_CONFIG
@@ -350,7 +350,7 @@
   disabled: true
 - insert:
     - id: companion-download-webserver
-      name: /home/alex/git/my/dsh-customs/plugins/companion-download/webserver.mjs
+      name: ../../../git/my/dsh-customs/plugins/companion-download/webserver.mjs
       inject:
         - webStartup
       config:
@@ -360,7 +360,7 @@
         host: 127.0.0.1
         port: 3081
     - id: companion-download-host
-      name: /home/alex/git/my/dsh-customs/plugins/companion-download/host.mjs
+      name: ../../../git/my/dsh-customs/plugins/companion-download/host.mjs
       config:
         enabled: true
         origin: https://dsh.tail37b3d7.ts.net:8443
