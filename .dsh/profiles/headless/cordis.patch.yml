@@ -12,24 +12,34 @@
 # See the web profile's cordis.patch.yml for the toolCompat/toolGuide notes.
 # Alex's local tools: remove these five alex-* rows to deactivate.
 - insert:
+    - id: alex-llm-resilience
+      name: ../../../git/my/dsh-customs/plugins/llm-resilience/lib/index-v5-unified.mjs
+      config:
+        {}
+    - id: alex-codex-transient-close
+      name: ../../../git/my/dsh-customs/plugins/codex-transient-close/index.mjs
+    - id: alex-agent-self-heal
+      name: ../../../git/my/dsh-customs/plugins/agent-self-heal/lib/index-v6-unified.mjs
+      config:
+        {}
     - id: alex-file-observation-coverage
-      name: /home/alex/git/my/dsh-customs/plugins/apply-patch/observation.mjs
+      name: ../../../git/my/dsh-customs/plugins/apply-patch/observation.mjs
     - id: alex-apply-patch
-      name: /home/alex/git/my/dsh-customs/plugins/apply-patch/index.mjs
+      name: ../../../git/my/dsh-customs/plugins/apply-patch/index.mjs
     - id: alex-workspace-context
-      name: /home/alex/git/my/dsh-customs/plugins/workspace-context/index.mjs
+      name: ../../../git/my/dsh-customs/plugins/workspace-context/index.mjs
     - id: alex-project-mcp
-      name: /home/alex/git/my/dsh-customs/plugins/project-mcp/index.mjs
+      name: ../../../git/my/dsh-customs/plugins/project-mcp/index.mjs
     - id: alex-browser
-      name: /home/alex/git/my/dsh-customs/plugins/browser/index.mjs
+      name: ../../../git/my/dsh-customs/plugins/browser/index.mjs
     - id: alex-clipboard
-      name: /home/alex/git/my/dsh-customs/plugins/clipboard/index.mjs
+      name: ../../../git/my/dsh-customs/plugins/clipboard/index.mjs
     - id: alex-trash
-      name: /home/alex/git/my/dsh-customs/plugins/trash/index.mjs
+      name: ../../../git/my/dsh-customs/plugins/trash/index.mjs
     - id: alex-list
-      name: /home/alex/git/my/dsh-customs/plugins/list/index.mjs
+      name: ../../../git/my/dsh-customs/plugins/list/index.mjs
     - id: alex-shell-reconsider
-      name: /home/alex/git/my/dsh-customs/plugins/shell-reconsider/index.mjs
+      name: ../../../git/my/dsh-customs/plugins/shell-reconsider/index.mjs
       config:
         interval: 50
         unit: steps
@@ -57,20 +67,10 @@
             temperature: 0.8
 - id: llm-retry
   disabled: true
-- insert:
-    - id: alex-llm-resilience
-      name: /home/alex/git/my/dsh-customs/plugins/llm-resilience/lib/index-v5-unified.mjs
-      config: {}
-    - id: alex-codex-transient-close
-      name: /home/alex/git/my/dsh-customs/plugins/codex-transient-close/index.mjs
-      config: {}
-    - id: alex-agent-self-heal
-      name: /home/alex/git/my/dsh-customs/plugins/agent-self-heal/lib/index-v6-unified.mjs
-      config: {}
 # BEGIN alex-research activation v1
 - insert:
     - id: alex-research
-      name: /home/alex/git/my/dsh-customs/plugins/research/index.mjs
+      name: ../../../git/my/dsh-customs/plugins/research/index.mjs
 - id: tool-web
   name: "@deepseek-ai/dsh-tool-web"
   config:

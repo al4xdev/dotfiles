@@ -91,11 +91,18 @@
             name: '@deepseek-ai/cordis-plugin-include'
             config:
               path: ./standard-managed-plugins.yml
+    - id: alex-llm-resilience
+      name: ../../../git/my/dsh-customs/plugins/llm-resilience/lib/index-v5-unified.mjs
+      config:
+        {}
     - id: alex-codex-transient-close
       name: ../../../git/my/dsh-customs/plugins/codex-transient-close/index.mjs
     - id: alex-agent-self-heal
       name: ../../../git/my/dsh-customs/plugins/agent-self-heal/lib/index-v6-unified.mjs
-      config: {}
+      config:
+        {}
+    - id: alex-session-bridge
+      name: ../../../git/my/dsh-customs/plugins/session/bridge.mjs
     - id: alex-file-observation-coverage
       name: ../../../git/my/dsh-customs/plugins/apply-patch/observation.mjs
     - id: alex-apply-patch
@@ -135,10 +142,6 @@
       name: ../../../git/my/dsh-customs/plugins/managed-plans/tui.mjs
     - id: antigravity-tui-login
       name: ../../../git/my/dsh-customs/plugins/dsh-antigravity/tui-login.mjs
-- insert:
-    - id: alex-llm-resilience
-      name: ../../../git/my/dsh-customs/plugins/llm-resilience/lib/index-v5-unified.mjs
-      config: {}
 # BEGIN alex-research activation v1
 - insert:
     - id: alex-research
