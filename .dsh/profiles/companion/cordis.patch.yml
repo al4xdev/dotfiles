@@ -12,9 +12,8 @@
     default: companion
 - id: agent-default-model
   config:
-    provider: openai-codex
-    model: gpt-6-luna
-    reasoningEffort: medium
+    provider: google-antigravity
+    model: gemini-3.8-flash-low
 - id: session-persistence-jsonl
   config:
     root: /home/alex/.dsh/sessions
