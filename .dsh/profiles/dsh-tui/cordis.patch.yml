@@ -79,6 +79,14 @@
       skin: whaleGirl
     shortcuts:
       editor: ctrl+shift+g
+# Pure API model voice: no ⏵ self-narration contract in the system prompt (its
+# "optionally playful" clause leaked into answers). Bundle keys are repeated
+# because a config patch replaces the whole block.
+- id: working-activity
+  config:
+    publish: false
+    publishIntervalMs: 500
+    narrate: false
 # Alex's local tools: remove these alex-* rows to deactivate.
 - insert:
     - id: preset-standard
