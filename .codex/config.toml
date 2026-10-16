@@ -1,8 +1,9 @@
-model = "gpt-6.1-sol"
-model_reasoning_effort = "low"
+model = "gpt-6-astra"
+model_reasoning_effort = "medium"
 approvals_reviewer = "user"
 approval_policy = "never"
 sandbox_mode = "danger-full-access"
+service_tier = "fast"
 
 [projects."/home/alex/git/my/porf_page"]
 trust_level = "trusted"
@@ -110,6 +111,15 @@ trust_level = "trusted"
 trust_level = "trusted"
 
 [projects."/home/alex/git/my/ygo-deck"]
+trust_level = "trusted"
+
+[projects."/home/alex/git/my/dsh-customs/frontend/dsh-tui"]
+trust_level = "trusted"
+
+[projects."/home/alex/git/my/h3"]
+trust_level = "trusted"
+
+[projects."/home/alex/git/my/dsh-customs"]
 trust_level = "trusted"
 
 [tui]

@@ -20,6 +20,8 @@
       name: /home/alex/git/my/dsh-customs/plugins/workspace-context/index.mjs
     - id: alex-project-mcp
       name: /home/alex/git/my/dsh-customs/plugins/project-mcp/index.mjs
+    - id: alex-browser
+      name: /home/alex/git/my/dsh-customs/plugins/browser/index.mjs
     - id: alex-clipboard
       name: /home/alex/git/my/dsh-customs/plugins/clipboard/index.mjs
     - id: alex-trash
@@ -53,3 +55,26 @@
             maxTokens: 24576
             vision: true
             temperature: 0.8
+- id: llm-retry
+  disabled: true
+- insert:
+    - id: alex-llm-resilience
+      name: /home/alex/git/my/dsh-customs/plugins/llm-resilience/lib/index-v5-unified.mjs
+      config: {}
+    - id: alex-codex-transient-close
+      name: /home/alex/git/my/dsh-customs/plugins/codex-transient-close/index.mjs
+      config: {}
+    - id: alex-agent-self-heal
+      name: /home/alex/git/my/dsh-customs/plugins/agent-self-heal/lib/index-v6-unified.mjs
+      config: {}
+# BEGIN alex-research activation v1
+- insert:
+    - id: alex-research
+      name: /home/alex/git/my/dsh-customs/plugins/research/index.mjs
+- id: tool-web
+  name: "@deepseek-ai/dsh-tool-web"
+  config:
+    fetch: true
+    searchTimeoutMs: 60000
+    search: false
+# END alex-research activation v1

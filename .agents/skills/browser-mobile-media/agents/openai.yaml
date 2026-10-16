@@ -1,0 +1,4 @@
+interface:
+  display_name: "Browser Mobile Media"
+  short_description: "Audit mobile UI using the native browser tool"
+  default_prompt: "Use $browser-mobile-media with the native browser tool to audit this mobile web flow and capture reproducible screenshots or gesture clips."

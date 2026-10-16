@@ -10,6 +10,7 @@
 ## Fish specific rules
 !/.config/fish/
 !/.config/fish/config.fish
+!/.config/fish/cage-session.fish
 !/.config/fish/functions/
 !/.config/fish/functions/**
 !/.config/fish/completions/
@@ -86,7 +87,7 @@
 ## whichever machine this repo lands on; the plugin sources are a separate repo.
 !/.dsh/
 /.dsh/*
-!/.dsh/AGENTS.md
+!/.dsh/AGENTS*.md
 !/.dsh/.agent-presets/
 /.dsh/.agent-presets/*
 !/.dsh/.agent-presets/default/
@@ -101,6 +102,7 @@
 !/.dsh/profiles/*/cordis.yml
 !/.dsh/profiles/*/package.json
 !/.dsh/profiles/*/standard-managed-plugins.yml
+!/.dsh/profiles/*/alex-research-*.yml
 
 ## Personal scripts
 !/.config/my_scripts/

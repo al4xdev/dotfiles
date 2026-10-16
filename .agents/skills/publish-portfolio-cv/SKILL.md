@@ -12,11 +12,12 @@ checkout only as a constrained rendering destination.
 
 1. Set the destination to `/home/alex/git/my/porf_page`.
 2. Read its `AGENTS.md` and obey the required plan/instruction sequence.
-3. Read `/home/alex/git/my/porf_page/.agents/skills/cv-editor/SKILL.md`
+3. Read `/home/alex/git/my/porf_page/docs/cv-editor.md`
    completely and follow it as the authoritative editing/export workflow.
-4. Read only the additional CV files that skill requires. Do not explore or
+   Its project-local MCP exposes the same guide as `cv://workflow`.
+4. Read only the additional CV files that workflow requires. Do not explore or
    analyze unrelated portfolio source code.
-5. If the checkout, downstream skill or required CV contract is missing, stop
+5. If the checkout, downstream guide or required CV contract is missing, stop
    and report the missing path instead of creating a replacement site flow.
 
 ## Preserve the evidence boundary
@@ -46,7 +47,7 @@ checkout only as a constrained rendering destination.
 
 ## Validate and publish
 
-Run the downstream skill's required sequence:
+Run the downstream editor workflow's required sequence:
 
 1. `npm run test:unit`
 2. Export both changed languages with `npm run cv:export -- --lang en` and

@@ -1,0 +1,5 @@
+# Managed research activation derivative; original scopes and expressions retained.
+- id: liangshen-plugins
+  name: "@deepseek-ai/cordis-plugin-include"
+  config:
+    path: /home/alex/.dsh/profiles/dsh-tui/alex-research-675300000cb135ed.yml
