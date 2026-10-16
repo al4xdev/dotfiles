@@ -33,7 +33,6 @@
 ## Loose System and Terminal configurations
 !/.bashrc
 !/.config/starship.toml
-!/.config/mimeapps.list
 
 ## Claude CLI specific rules (Only skills and CLAUDE.md)
 !/.claude/
@@ -137,3 +136,10 @@
 .dsh/sessions/
 .dsh/storages/
 .dsh/attachments/
+*.bak
+*.bak.*
+.claude/skills/synced/
+.claude/skills/.trash/
+.config/my_scripts/grammar-fix-editor.sh
+.config/my_scripts/keyring-unlock-startup.py
+.config/my_scripts/keyring-unlock-startup.sh

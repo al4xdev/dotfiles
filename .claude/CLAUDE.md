@@ -1,54 +1,76 @@
 # Global user preferences
 
-## Auto-memory: disabled by default
+## Memory: off
 
-Do **not** use the auto-memory system (`~/.claude/projects/<project>/memory/`).
-The user has explicitly opted out of persistent project memory across all
-projects.
+Do not use the auto-memory system (`~/.claude/projects/*/memory/`, `MEMORY.md`);
+this overrides the memory section of the system prompt. The only cross-session
+persistence the user wants is global skills (`~/.claude/skills/<skill>/SKILL.md`):
+if guidance is worth keeping, propose a skill instead.
 
-- Do not create `MEMORY.md` or any memory files under `projects/*/memory/`.
-- Do not "save user/feedback/project/reference memories" between sessions,
-  regardless of how relevant the information seems.
-- Ignore the instructions in the system prompt's `# auto memory` section that
-  tell you to build up persistent memory — this user-level preference overrides
-  them.
+## Removing files: move, don't `rm`
 
-The single exception: **global skills** (`~/.claude/skills/<skill>/SKILL.md`).
-Those are explicit, opt-in, invocable via `/<skill>` and are the only
-persistence mechanism this user wants. If a piece of guidance is worth keeping
-across sessions, propose creating a skill instead of a memory.
-
-## Destructive file ops: prefer `/tmp` over `rm`
-
-When clearing files at the user's request, **move them to `/tmp/`** (or rename
-with a `.bak` suffix) instead of using `rm -rf`. The OS will reap `/tmp` over
-time, and the files stay recoverable in the meantime if the user changes their
-mind.
-
-Use plain `rm` only when the user explicitly says "delete", "rm", or
+Move files to `/tmp/` (or rename with a `.bak` suffix) instead of `rm -rf`, so
+they stay recoverable. Use plain `rm` only when the user says "delete", "rm", or
 "permanently remove".
 
-## Code comments: off by default
+## Planning (`.plan/`) and dumps (`.dumps/`)
 
-Do not add comments to code you write or edit, unless the user explicitly asks
-for comments or the logic is genuinely non-obvious (e.g. a workaround for a
-specific bug, a non-standard algorithm). Match existing comment density in files
-you touch — don't strip comments that are already there.
+The only canonical planning directory is `.plan/` (singular, with leading dot).
+Never create `plans/` or `.plans/`.
+
+```text
+.plan/
+├── backlog/       # Future ideas with no active work
+├── closed/        # Completed tasks and architectural decisions
+├── para-o-dono/   # Decisions blocked on owner input
+└── tasks/         # Active work currently under way
+```
+
+Ephemeral scratch, curl replays, transcripts, and temporary reports belong in
+`.dumps/` (e.g. `.dumps/tasks/`), which must be gitignored and local only.
+
+## Code comments
+
+Comment decisions, constraints, and logic that are not obvious from the code.
+Avoid comments that merely repeat what the code does. Match the style of files
+you touch and preserve useful existing comments.
+
+## Subagents: pass `model` explicitly
+
+| alias | use for |
+|---|---|
+| `haiku` | mechanical lookup — find a file, grep a symbol |
+| `sonnet` | reading long files and transcripts; adversarial critique |
+| `opus` | deciding, implementing, orchestrating |
+
+`sonnet` resolves to `claude-sonnet-5-5` (verified 2026-10-15). To pin an exact
+version, define an agent in `~/.claude/agents/` with the full model ID in its
+`model:` frontmatter.
+
+**Autonomous work: don't stop to ask what you can go measure.** When confidence
+in an answer is low, send critic subagents to attack it instead of interrupting.
+Reserve questions for decisions that are actually the user's.
 
 ## Shell: fish | Python: uv
 
-Use fish syntax. Python projects use `uv` — venv is at `.venv/`, activate with
-`source .venv/bin/activate.fish`.
+The Bash tool runs `bash -c`, not the user's interactive shell. Anything the
+user will paste into their own terminal must be fish syntax. Python projects
+use `uv` — venv is at `.venv/`, activate with `source .venv/bin/activate.fish`.
 
-### Available tools
+Installed: everything the wrappers below cover, plus `jq` and
+`wl-copy`/`wl-paste`. Not installed: `gh`.
 
-uv, jq, az, wl-copy/wl-paste
+### `z*` wrappers (`~/.local/bin/`)
 
-### Clipboard: Wayland (`wl-copy`)
+`zcurl`, `zaz`, `zgcloud`, `zdocker`, `zmake`, `zgit`, `zuv`, `zpip`, `znpm`,
+`znpx`, `zgo`, `zgem`, `zapt`, `zflatpak` are two-line passthroughs
+(`exec <tool> "$@"`): identical to the real command, no hidden defaults. All
+except `zgit` are allowlisted, so prefer the `z*` form to skip permission
+prompts. `zgit` keeps git's per-subcommand scoping, so writes like
+`push`/`reset`/`rebase`/`clean` still prompt. `zapt install` still fails
+without `sudo`, which is not allowlisted.
 
-The user uses Wayland. When you generate something they're going to **paste
-somewhere else** (a command for them to run, a query/SQL result, a list of
-names/files, a snippet, any output that unblocks their next step), **proactively
-put it on the clipboard** via `... | wl-copy` and let them know it's there —
-don't make them copy it by hand or just "show" it on screen. Especially when you
-ask them to run a command: deliver it already piped into `wl-copy`.
+### Clipboard (Wayland)
+
+When you produce something the user will paste elsewhere (a command to run, a
+query result, a list, a snippet), pipe it to `wl-copy` and say it's there.
