@@ -59,7 +59,7 @@
 # bootstrap pair until a NEW durable tool call exists past the boundary
 # (epoch-aware, see compaction-epoch.mjs).
 - id: tool-bootstrap
-  name: /home/alex/git/my/dsh-customs/frontend/dsh-tui/presets/liangshen/tool-bootstrap.mjs
+  name: ../../../git/my/dsh-customs/frontend/dsh-tui/presets/liangshen/tool-bootstrap.mjs
   config:
     bootstrapTools: [ bash, str_replace_editor ]
     promoteOn: tool-call
@@ -102,7 +102,7 @@
 # exist; read them before acting" — and the model reads the files itself via
 # the filesystem tools when relevant.
 - id: instruction-hint
-  name: /home/alex/git/my/dsh-customs/frontend/dsh-tui/presets/liangshen/instruction-hint.mjs
+  name: ../../../git/my/dsh-customs/frontend/dsh-tui/presets/liangshen/instruction-hint.mjs
   config:
     promoteOn: tool-call
     includeSubagents: true
@@ -180,7 +180,7 @@
 # No OS sandbox confinement on Windows (landlock is linux-only); the tool
 # description says so.
 - id: custom-bash
-  name: /home/alex/git/my/dsh-customs/frontend/dsh-tui/presets/liangshen/custom-bash.mjs
+  name: ../../../git/my/dsh-customs/frontend/dsh-tui/presets/liangshen/custom-bash.mjs
   disabled: !!js process.platform !== 'win32'
 
 # ── filesystem ──────────────────────────────────────────────────────────────
@@ -244,7 +244,7 @@
   name: '@deepseek-ai/dsh-skill-filesystem'
 
 - id: skill-search
-  name: /home/alex/git/my/dsh-customs/frontend/dsh-tui/presets/liangshen/skill-search.mjs
+  name: ../../../git/my/dsh-customs/frontend/dsh-tui/presets/liangshen/skill-search.mjs
 
 # ── goals ───────────────────────────────────────────────────────────────────
 

@@ -2,4 +2,4 @@
 - id: liangshen-plugins
   name: "@deepseek-ai/cordis-plugin-include"
   config:
-    path: /home/alex/.dsh/profiles/dsh-tui/alex-research-675300000cb135ed.yml
+    path: ./alex-research-160ca8160216a13a.yml
