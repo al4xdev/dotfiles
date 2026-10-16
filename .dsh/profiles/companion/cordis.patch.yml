@@ -64,14 +64,12 @@
 - insert:
     - id: alex-llm-resilience
       name: ../../../git/my/dsh-customs/plugins/llm-resilience/lib/index-v6-unified.mjs
-      config:
-        {}
+      config: {}
     - id: alex-codex-transient-close
       name: ../../../git/my/dsh-customs/plugins/codex-transient-close/index.mjs
     - id: alex-agent-self-heal
       name: ../../../git/my/dsh-customs/plugins/agent-self-heal/lib/index-v7-unified.mjs
-      config:
-        {}
+      config: {}
     - id: alex-music
       name: ../../../git/my/dsh-customs/plugins/music/index.mjs
     - id: companion-oauth
