@@ -130,6 +130,8 @@
       name: ../../../git/my/dsh-customs/plugins/browser/index.mjs
     - id: alex-music
       name: ../../../git/my/dsh-customs/plugins/music/index.mjs
+    - id: alex-claude-bare-dsh
+      name: ../../../git/my/dsh-customs/plugins/claude-bare-dsh/index.mjs
     - id: alex-clipboard
       name: ../../../git/my/dsh-customs/plugins/clipboard/index.mjs
     - id: alex-trash
