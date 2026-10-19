@@ -75,10 +75,11 @@
     policy: never
 - id: dsh-tui
   config:
+    externalPlanCommand: true
     fullscreen: true
     terminalImages: true
-    externalPlanCommand: true
     lang: en
+    toolBackground: none
     companion:
       skin: whaleGirl
     shortcuts:
@@ -142,6 +143,8 @@
       name: ../../../git/my/dsh-customs/plugins/trash/index.mjs
     - id: alex-wait
       name: ../../../git/my/dsh-customs/plugins/wait/index.mjs
+    - id: alex-peak-gate
+      name: ../../../git/my/dsh-customs/plugins/peak-gate/index.mjs
     - id: alex-list
       name: ../../../git/my/dsh-customs/plugins/list/index.mjs
     - id: alex-shell-reconsider
@@ -454,7 +457,8 @@
             name: '@deepseek-ai/dsh-skill-filesystem'
             config:
               customSkillDirs:
-                - !!js process.getBuiltinModule('node:path').join(process.getBuiltinModule('node:path').dirname(process.getBuiltinModule('node:module').createRequire(baseUrl).resolve('@deepseek-ai/dsh-agent-preset/package.json')), 'skills')
+                - !!js process.getBuiltinModule('node:path').join(process.getBuiltinModule('node:path').dirname(process.getBuiltinModule('node:module').createRequire(baseUrl).resolve('@deepseek-ai/dsh-agent-preset/package.json')),
+                  'skills')
           - id: tool-skill
             name: '@deepseek-ai/dsh-tool-skill'
           - id: present
@@ -516,4 +520,5 @@
         name: "@deepseek-ai/cordis-plugin-include"
         config:
           path: ./alex-research-043f1075af3dfef0.yml
+
 # END alex-research activation v1

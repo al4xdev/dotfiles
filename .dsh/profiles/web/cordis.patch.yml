@@ -45,6 +45,8 @@
       name: ../../../git/my/dsh-customs/plugins/trash/index.mjs
     - id: alex-wait
       name: ../../../git/my/dsh-customs/plugins/wait/index.mjs
+    - id: alex-peak-gate
+      name: ../../../git/my/dsh-customs/plugins/peak-gate/index.mjs
     - id: alex-list
       name: ../../../git/my/dsh-customs/plugins/list/index.mjs
     - id: alex-shell-reconsider
