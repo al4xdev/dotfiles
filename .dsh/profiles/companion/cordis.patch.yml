@@ -72,6 +72,8 @@
       config: {}
     - id: alex-music
       name: ../../../git/my/dsh-customs/plugins/music/index.mjs
+    - id: alex-wait
+      name: ../../../git/my/dsh-customs/plugins/wait/index.mjs
     - id: companion-oauth
       name: ../../../git/my/dsh-customs/frontend/dsh-tui/lib/types/dsh-adapter/oauth/index.js
       inject: [ llm, commands ]

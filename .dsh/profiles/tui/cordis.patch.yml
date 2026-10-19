@@ -27,6 +27,8 @@
       name: ../../../git/my/dsh-customs/plugins/clipboard/index.mjs
     - id: alex-trash
       name: ../../../git/my/dsh-customs/plugins/trash/index.mjs
+    - id: alex-wait
+      name: ../../../git/my/dsh-customs/plugins/wait/index.mjs
     - id: alex-list
       name: ../../../git/my/dsh-customs/plugins/list/index.mjs
     - id: alex-shell-reconsider
