@@ -22,9 +22,6 @@
 !/.config/micro/
 .config/micro/buffers/
 
-## Alacritty specific rules (Everything)
-!/.config/alacritty/
-!/.config/alacritty/**
 
 ## Kitty specific rules (Everything)
 !/.config/kitty/

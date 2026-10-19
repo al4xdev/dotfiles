@@ -68,7 +68,7 @@ per-tool agent config for Claude Code, Gemini, Codex, Pi and DSH. Anything else
 is ignored by default. The "SAFETY LOCKS" block at the bottom of `.gitignore`
 belts the suspenders for the most sensitive paths.
 
-Daily-driver stack: fish, starship, eza, ugrep, fastfetch, alacritty,
+Daily-driver stack: fish, starship, eza, ugrep, fastfetch, kitty,
 uv for Python, nvm for Node, and Claude Code for everything else.
 
 ## Tests
