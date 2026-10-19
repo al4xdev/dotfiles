@@ -128,8 +128,6 @@
       name: ../../../git/my/dsh-customs/plugins/project-mcp/index.mjs
     - id: alex-browser
       name: ../../../git/my/dsh-customs/plugins/browser/index.mjs
-    - id: alex-gen-image
-      name: ../../../git/my/dsh-customs/plugins/gen-image/index.mjs
     - id: alex-music
       name: ../../../git/my/dsh-customs/plugins/music/index.mjs
     - id: alex-clipboard
