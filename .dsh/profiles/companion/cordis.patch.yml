@@ -285,6 +285,10 @@
             senderId: '1029592716516'
             androidPackage: 'dev.alex.dsh.companion'
           serviceAccountFile: '/home/alex/.config/dsh-companion/firebase/companion-fcm-sender.json'
+# No telemetry to DeepSeek: the dsh-base row that ships session-log excerpts (after
+# feedback) to dsh-otel-collector.deepseeksvc.com stays off in every profile.
+- id: session-telemetry-otel
+  disabled: true
 - id: llm-retry
   disabled: true
 # BEGIN alex-research activation v1

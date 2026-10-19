@@ -36,6 +36,10 @@
       config:
         interval: 50
         unit: steps
+# No telemetry to DeepSeek: the dsh-base row that ships session-log excerpts (after
+# feedback) to dsh-otel-collector.deepseeksvc.com stays off in every profile.
+- id: session-telemetry-otel
+  disabled: true
 - id: llm-retry
   disabled: true
 # BEGIN alex-research activation v1

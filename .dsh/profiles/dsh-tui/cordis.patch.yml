@@ -34,6 +34,10 @@
     fetchProvider: http
 - id: web-search-deepseek
   disabled: true
+# No telemetry to DeepSeek: the dsh-base row that ships session-log excerpts (after
+# feedback) to dsh-otel-collector.deepseeksvc.com stays off in every profile.
+- id: session-telemetry-otel
+  disabled: true
 # Quota resets use a separate24h cap; keep exactly one recovery engine.
 - id: llm-retry
   disabled: true
