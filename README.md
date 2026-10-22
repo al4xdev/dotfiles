@@ -63,7 +63,7 @@ and, on a fresh box, nothing else. `.gitignore` denies everything by default
 and then re-allows an explicit list: a handful of fish configs, the bashrc, the
 starship prompt, the `mimeapps.list`, a tiny set of personal scripts under
 `.config/my_scripts/`, the shared agent skills under `.agents/skills/`, and the
-per-tool agent config for Claude Code, Gemini, Codex, Pi and DSH. Anything else
+per-tool agent config for Claude Code, Gemini, Pi and DSH. Anything else
 — fish universal variables, history files, caches, session state, credentials —
 is ignored by default. The "SAFETY LOCKS" block at the bottom of `.gitignore`
 belts the suspenders for the most sensitive paths.

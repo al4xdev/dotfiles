@@ -51,25 +51,6 @@
 !/.gemini/config/agents/
 !/.gemini/config/agents/**
 
-## Codex configuration (exclude credentials, state, caches, binaries, and managed skills)
-!/.codex/
-/.codex/*
-!/.codex/config.toml
-!/.codex/AGENTS.md
-!/.codex/rules/
-!/.codex/rules/**
-!/.codex/custom/
-!/.codex/custom/agy-scout/
-!/.codex/custom/agy-scout/**
-/.codex/custom/agy-scout/.agy-runs/
-/.codex/custom/agy-scout/.venv/
-/.codex/custom/agy-scout/*.egg-info/
-/.codex/custom/agy-scout/.pytest_cache/
-/.codex/custom/agy-scout/.mypy_cache/
-/.codex/custom/agy-scout/.ruff_cache/
-/.codex/custom/agy-scout/**/__pycache__/
-/.codex/custom/agy-scout/**/*.pyc
-
 ## Shared agent skills
 !/.agents/
 /.agents/*
