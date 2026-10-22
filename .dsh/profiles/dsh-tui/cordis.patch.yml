@@ -6,18 +6,23 @@
 # global da sessão — o `dsht` não fixa mais nenhum modelo.
 - id: agent-default-model
   config:
-    provider: openai-codex
-    model: gpt-6.1-sol
+    provider: deepseek-official
+    model: deepseek-flash
     reasoningEffort: low
 # Native delegation selection is captured only by fresh root sessions.
+# Order is the order the subagent picker renders: deepseek-flash first.
 - id: dsh-tui-subagent-model-selection-settings
   config:
     enabled: true
     allowedModels:
-      - provider: openai-codex
-        model: gpt-6.1-sol
-      - provider: openai-codex
-        model: gpt-6-luna
+      # DeepSeek flash: the default child route (catalog id of dsh-llm-deepseek).
+      - provider: deepseek-official
+        model: deepseek-flash
+      # Google Anti Gravity. `gemini-4-pro` is not in the Cloud Code Assist
+      # catalog yet: the Gemini 4 Argon trial exposes gemini-4-argon-high,
+      # -medium and -low (plugins/dsh-antigravity/src/models.ts).
+      - provider: google-antigravity
+        model: gemini-4-argon-high
 # Long-lived Codex agents: bounded provider retry, last wait18–20min with jitter.
 # 190k is the pressure ceiling for this 272k model; safety reserves may trigger earlier.
 - id: compaction-basic
@@ -155,7 +160,7 @@
     - id: alex-grammar-fix
       name: ../../../git/my/dsh-customs/plugins/grammar-fix/index.mjs
       config:
-        model: google-antigravity/gemini-3.8-flash-low
+        model: deepseek-official/deepseek-flash
         language: Brazilian Portuguese (pt-BR)
     - id: alex-managed-plans
       name: ../../../git/my/dsh-customs/plugins/managed-plans/index.mjs
