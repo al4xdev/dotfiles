@@ -112,21 +112,21 @@ source $fish_dir/functions/gen.fish
 source $fish_dir/completions/gen.fish
 
 set -l help_out (gen --help 2>&1 | string collect)
-_assert_contains "gen --help prints usage" "Usage: gen" $help_out
+_assert_contains "gen --help prints usage" "usage: gen" $help_out
 _assert_contains "gen --help lists image method" image $help_out
 _assert_contains "gen --help lists video method" video $help_out
 
 set -l noarg_out (gen 2>&1 | string collect)
-_assert_contains "gen with no args prints usage" "Usage: gen" $noarg_out
+_assert_contains "gen with no args prints usage" "usage: gen" $noarg_out
 
 gen foobar >/dev/null 2>&1
-_assert_status "gen <unknown> returns exit 1" 1 $status
+_assert_status "gen <unknown> returns exit 2" 2 $status
 
 set -l completions (complete --do-complete='gen ' | string collect)
 _assert_contains "completions register 'image'" image $completions
 _assert_contains "completions register 'video'" video $completions
-_assert_contains "completion description for image" "image generation" $completions
-_assert_contains "completion description for video" "video generation" $completions
+_assert_contains "completion description for image" "Start an original model profile" $completions
+_assert_contains "completion description for video" "Start an original model profile" $completions
 
 # ---------------------------------------------------------------------------
 echo ""
@@ -151,9 +151,6 @@ for wrapper in agy claude
         source $fpath
         if functions -q $wrapper
             _ok "function $wrapper loaded"
-            set -l body (functions $wrapper | string collect)
-            _assert_contains "$wrapper sets grammar-fix-editor.sh EDITOR" \
-                "grammar-fix-editor.sh" "$body"
         else
             _bad "function $wrapper failed to load"
         end
@@ -182,7 +179,7 @@ end
 echo ""
 echo "=== my_scripts ==="
 
-for script in $scripts_dir/start.sh $scripts_dir/start_video.sh $scripts_dir/grammar-fix-editor.sh
+for script in $scripts_dir/start.sh $scripts_dir/start_video.sh
     set -l name (basename $script)
     if bash -n $script 2>/dev/null
         _ok "syntax ok: $name"
@@ -203,31 +200,6 @@ if grep -qE '^\s*python\s+home/' $scripts_dir/start_video.sh
 else
     _ok "start_video.sh uses an absolute python path"
 end
-
-# Specific tests for grammar-fix-editor.sh
-set -l gscript $scripts_dir/grammar-fix-editor.sh
-if test -x $gscript
-    _ok "grammar-fix-editor.sh is executable"
-else
-    _bad "grammar-fix-editor.sh is not executable"
-end
-
-# Test empty file handling in grammar-fix-editor.sh
-set -l tmp_empty (mktemp)
-bash $gscript $tmp_empty 2>/dev/null
-_assert_status "grammar-fix-editor.sh on empty file returns 0" 0 $status
-if test ! -s $tmp_empty
-    _ok "grammar-fix-editor.sh leaves empty file untouched"
-else
-    _bad "grammar-fix-editor.sh modified empty file"
-end
-rm -f $tmp_empty
-
-set -l gscript_content (cat $gscript | string collect)
-_assert_contains "grammar-fix-editor.sh supports DEEPSEEK_API_KEY" "DEEPSEEK_API_KEY" "$gscript_content"
-_assert_contains "grammar-fix-editor.sh supports OPENROUTER_API_KEY" "OPENROUTER_API_KEY" "$gscript_content"
-_assert_contains "grammar-fix-editor.sh handles reasoning_content" "reasoning_content" "$gscript_content"
-_assert_contains "grammar-fix-editor.sh strips think tags" "think" "$gscript_content"
 
 # ---------------------------------------------------------------------------
 echo ""
