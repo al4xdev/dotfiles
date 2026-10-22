@@ -12,6 +12,13 @@
       ],
       "command": "npx",
       "disabled": true
+    },
+    "rea": {
+      "args": [
+        "serve"
+      ],
+      "command": "/home/alex/git/my/rea/target/release/rea",
+      "disabled": false
     }
   }
 }
