@@ -118,6 +118,13 @@ reasoning and model/draft settings are frozen. Gemma uses fish without loading
 config; the original qw shebang behavior is preserved. Migrated abbreviations
 are retired when the function is sourced; other aliases remain untouched.
 
+`provenance.json` also carries an `extra_argv` list per profile: deliberate
+additions on top of the frozen expansion, currently `--cache-ram 20480` for
+every Gemma profile. A swapped-out slot state is then kept in host RAM instead
+of being recomputed, which is what makes alternating conversations (main and
+subagent, or two sessions on one port) reuse their prefix instead of paying the
+whole prefill again. The cache is a byte copy, so it costs RAM, not compute.
+
 Private launch files contain the original caller environment and may contain
 secrets. Never share them, version them or expose them to MCP. Model logs may
 also contain private content; log access is explicit. There is no log rotation,

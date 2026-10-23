@@ -51,9 +51,13 @@ class LauncherTests(unittest.TestCase):
         for name, record in PROVENANCE["profiles"].items():
             if name == "qw":
                 continue  # The original Bonsai script is neither sourced nor changed.
+            # extra_argv carries deliberate additions on top of the frozen
+            # abbreviation expansion (currently the state cache size).
+            extra = record.get("extra_argv", [])
             launcher = ROOT / "launchers" / f"{name}.fish"
             content = launcher.read_text()
-            self.assertEqual(content, "#!/usr/bin/env -S fish --no-config\nexec " + record["expansion"] + " $argv\n")
+            self.assertEqual(content, "#!/usr/bin/env -S fish --no-config\nexec " + record["expansion"]
+                             + "".join(" " + arg for arg in extra) + " $argv\n")
             self.assertEqual(launcher.stat().st_mode & 0o777, 0o755)
             subprocess.run(["fish", "--no-config", "--no-execute", str(launcher)], check=True, capture_output=True, timeout=5)
             # exec is a reserved fish keyword, not a mockable function. Replace
@@ -68,9 +72,12 @@ class LauncherTests(unittest.TestCase):
                     with self.subTest(profile=name, extras=extras):
                         original = fish("printf '%s\\0' " + record["expansion"] + " $argv", extras)
                         generated = fish("source $argv[1] $argv[2..-1]", [str(safe), *extras])
-                        expected = b"".join(os.fsencode(a) + b"\0" for a in [*record["expected_argv"], *extras])
-                        self.assertEqual(original, expected)
-                        self.assertEqual(generated, expected)
+                        frozen = b"".join(os.fsencode(a) + b"\0" for a in [*record["expected_argv"], *extras])
+                        extended = b"".join(os.fsencode(a) + b"\0" for a in [*record["expected_argv"], *extra, *extras])
+                        # The recorded abbreviation still expands exactly as it did;
+                        # the launcher is that expansion plus the declared additions.
+                        self.assertEqual(original, frozen)
+                        self.assertEqual(generated, extended)
 
     def test_executable_shebang_preserves_exported_environment(self):
         with tempfile.TemporaryDirectory() as directory:
@@ -92,7 +99,9 @@ class LauncherTests(unittest.TestCase):
                 safe.chmod(0o755)
                 with self.subTest(profile=name):
                     result = subprocess.run([str(safe), "extra argument", ""], env=environment, capture_output=True, check=True, timeout=5)
-                    argv = [*PROVENANCE["profiles"][name]["expected_argv"], "extra argument", "", environment["EDITOR"], environment["GEN_ENV"], environment["PATH"]]
+                    record = PROVENANCE["profiles"][name]
+                    argv = [*record["expected_argv"], *record.get("extra_argv", []), "extra argument", "",
+                            environment["EDITOR"], environment["GEN_ENV"], environment["PATH"]]
                     self.assertEqual(result.stdout, b"".join(os.fsencode(a) + b"\0" for a in argv))
                     self.assertFalse(marker.exists())
 
