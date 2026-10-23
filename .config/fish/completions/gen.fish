@@ -1,6 +1,7 @@
 complete -c gen -f
 complete -c gen -n '__fish_use_subcommand' -l headless -d 'Pure JSON for agents; before the command'
 complete -c gen -n '__fish_use_subcommand' -a 'image video qw' -d 'Start an original model profile'
+complete -c gen -n '__fish_use_subcommand' -a 'qw-lite' -d 'Bonsai 9B through b2.fish (fast local test)'
 complete -c gen -n '__fish_use_subcommand' -a 'gmmax gmno gmmed gmrol gmlow' -d 'Gemma through the original llama-server'
 complete -c gen -n '__fish_use_subcommand' -a stop -d 'Stop only the owned gen service'
 complete -c gen -n '__fish_use_subcommand' -a status -d 'Read service state without starting models'

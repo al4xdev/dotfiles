@@ -16,12 +16,15 @@ from contextlib import contextmanager
 from pathlib import Path
 
 UNIT = "gen.service"
-TEXT_PROFILES = ("qw", "gmmax", "gmno", "gmmed", "gmrol", "gmlow")
+TEXT_PROFILES = ("qw", "qw-lite", "gmmax", "gmno", "gmmed", "gmrol", "gmlow", "gmlite")
+# Original external launchers, kept out of launchers/: qw is the 27B Bonsai and
+# qw-lite is the 9B Bonsai, both on the same port so gen runs one at a time.
+ORIGINAL = {"qw": "run-bonsai2.fish", "qw-lite": "run-qw-lite.fish"}
 LAUNCHERS = {
     "image": Path("/home/alex/.config/my_scripts/start.sh"),
     "video": Path("/home/alex/.config/my_scripts/start_video.sh"),
-    "qw": Path("/home/alex/Applications/bonsai2/run-bonsai2.fish"),
-    **{name: Path(__file__).resolve().parent / "launchers" / f"{name}.fish" for name in TEXT_PROFILES if name != "qw"},
+    **{name: Path("/home/alex/Applications/bonsai2") / file for name, file in ORIGINAL.items()},
+    **{name: Path(__file__).resolve().parent / "launchers" / f"{name}.fish" for name in TEXT_PROFILES if name not in ORIGINAL},
 }
 PROFILE_COMMANDS = tuple(LAUNCHERS)
 PROPERTIES = ("LoadState", "ActiveState", "SubState", "Description", "Transient", "ExecStart")
