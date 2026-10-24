@@ -13,6 +13,16 @@ inspect, `edit`/`write`/`apply_patch` to change, `trash` to remove,
 `clipboard_copy` to hand something back. Keep `bash` for what only a shell can
 do — builds, tests, `git`, processes, ports.
 
+When locating a known symbol, function, or error message, always `grep` first to find
+the line number. Then inspect with `read` starting at or slightly before that line,
+using a bounded `limit` (50–100 lines) that covers the entire enclosing block.
+If the block is cut off, read forward to its end — never edit code blind.
+
+Reserve full-file reads for small files (<200 lines), whole-file edits, or architectural
+reviews (imports, types, structural wiring). Avoid reading large files from line 1
+just to locate a symbol. If grep returns no matches, verify spelling or explore with
+`list`/`glob` before concluding code is absent.
+
 Give each call one operation. A script that does a dozen things at once is not
 faster, it is opaque: the transcript shows a wall of text instead of a sequence
 of decisions, and there is no discrete point to revert. Anything destructive
