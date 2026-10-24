@@ -54,9 +54,13 @@ class LauncherTests(unittest.TestCase):
             # extra_argv carries deliberate additions on top of the frozen
             # abbreviation expansion (currently the state cache size).
             extra = record.get("extra_argv", [])
+            # amended_expansion is the frozen expansion after a deliberate flag change
+            # (gmrol's spec-type gained ngram-mod). The historical `expansion` and its
+            # reconstruction from source_declaration stay untouched.
+            body = record.get("amended_expansion", record["expansion"])
             launcher = ROOT / "launchers" / f"{name}.fish"
             content = launcher.read_text()
-            self.assertEqual(content, "#!/usr/bin/env -S fish --no-config\nexec " + record["expansion"]
+            self.assertEqual(content, "#!/usr/bin/env -S fish --no-config\nexec " + body
                              + "".join(" " + arg for arg in extra) + " $argv\n")
             self.assertEqual(launcher.stat().st_mode & 0o777, 0o755)
             subprocess.run(["fish", "--no-config", "--no-execute", str(launcher)], check=True, capture_output=True, timeout=5)
@@ -73,9 +77,10 @@ class LauncherTests(unittest.TestCase):
                         original = fish("printf '%s\\0' " + record["expansion"] + " $argv", extras)
                         generated = fish("source $argv[1] $argv[2..-1]", [str(safe), *extras])
                         frozen = b"".join(os.fsencode(a) + b"\0" for a in [*record["expected_argv"], *extras])
-                        extended = b"".join(os.fsencode(a) + b"\0" for a in [*record["expected_argv"], *extra, *extras])
+                        current = record.get("amended_argv", record["expected_argv"])
+                        extended = b"".join(os.fsencode(a) + b"\0" for a in [*current, *extra, *extras])
                         # The recorded abbreviation still expands exactly as it did;
-                        # the launcher is that expansion plus the declared additions.
+                        # the launcher is the current body plus the declared additions.
                         self.assertEqual(original, frozen)
                         self.assertEqual(generated, extended)
 
@@ -100,7 +105,8 @@ class LauncherTests(unittest.TestCase):
                 with self.subTest(profile=name):
                     result = subprocess.run([str(safe), "extra argument", ""], env=environment, capture_output=True, check=True, timeout=5)
                     record = PROVENANCE["profiles"][name]
-                    argv = [*record["expected_argv"], *record.get("extra_argv", []), "extra argument", "",
+                    argv = [*record.get("amended_argv", record["expected_argv"]),
+                            *record.get("extra_argv", []), "extra argument", "",
                             environment["EDITOR"], environment["GEN_ENV"], environment["PATH"]]
                     self.assertEqual(result.stdout, b"".join(os.fsencode(a) + b"\0" for a in argv))
                     self.assertFalse(marker.exists())
