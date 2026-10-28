@@ -16,14 +16,19 @@ from contextlib import contextmanager
 from pathlib import Path
 
 UNIT = "gen.service"
-TEXT_PROFILES = ("qw", "qw-lite", "gmmax", "gmno", "gmmed", "gmrol", "gmlow", "gmlite")
-# Original external launchers, kept out of launchers/: qw is the 27B Bonsai and
-# qw-lite is the 9B Bonsai, both on the same port so gen runs one at a time.
-ORIGINAL = {"qw": "run-bonsai2.fish", "qw-lite": "run-qw-lite.fish"}
+TEXT_PROFILES = ("gm", "qw")
+# Both local models run on NInfer now, one at a time through gen.service: qw is
+# the 27B ternary Bonsai (262144 tokens) and gm the Gemma 4 26B-A4B MoE with its
+# experts in pinned host RAM (also 262144 after the rk4v4 KV switch). The llama.cpp
+# profiles were retired with the models they loaded.
+ORIGINAL = {
+    "gm": Path("/home/alex/Applications/ninfer-all/run-gemma4-ninfer.fish"),
+    "qw": Path("/home/alex/Applications/ninfer-all/run-bonsai2-ninfer.fish"),
+}
 LAUNCHERS = {
     "image": Path("/home/alex/.config/my_scripts/start.sh"),
     "video": Path("/home/alex/.config/my_scripts/start_video.sh"),
-    **{name: Path("/home/alex/Applications/bonsai2") / file for name, file in ORIGINAL.items()},
+    **ORIGINAL,
     **{name: Path(__file__).resolve().parent / "launchers" / f"{name}.fish" for name in TEXT_PROFILES if name not in ORIGINAL},
 }
 PROFILE_COMMANDS = tuple(LAUNCHERS)
@@ -171,7 +176,7 @@ class Controller:
             except PermissionError:
                 raise Refused("cannot exclude external model processes") from None
             executable = os.fsdecode(argv[0]) if argv and argv[0] else ""
-            if comm == "llama-server" or Path(executable).name == "llama-server":
+            if comm in ("llama-server", "ninfer-serve") or Path(executable).name in ("llama-server", "ninfer-serve"):
                 found.append(int(entry.name))
             else:
                 # Match a script argument, never a substring in shell -c text.
@@ -210,7 +215,7 @@ class Controller:
             if previous and (self.state / previous["id"] / "uncertain").exists():
                 raise Refused("previous start is uncertain; inspect status/logs and explicitly stop before a new start")
             if self.external():
-                raise Refused("external ComfyUI/llama-server detected; no process was stopped")
+                raise Refused("external ComfyUI/llama-server/ninfer-serve detected; no process was stopped")
             launcher = LAUNCHERS[profile]
             if not launcher.is_file() or not os.access(launcher, os.X_OK):
                 raise Refused("original launcher is missing or not executable")
@@ -359,7 +364,7 @@ PUBLIC_ERRORS = frozenset((
     "gen.service name collision: refusing to stop an unowned unit",
     "gen.service still exists or is busy; wait for collection or explicitly stop",
     "previous start is uncertain; inspect status/logs and explicitly stop before a new start",
-    "external ComfyUI/llama-server detected; no process was stopped",
+    "external ComfyUI/llama-server/ninfer-serve detected; no process was stopped",
     "original launcher is missing or not executable",
     "start failed or is uncertain; no retry performed; inspect status/logs then explicitly stop",
     "stop failed or uncertain; no retry performed",
