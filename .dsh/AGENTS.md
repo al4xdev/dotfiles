@@ -65,3 +65,12 @@ Ephemeral scratch, curl replays, transcripts, and temporary reports belong in
   verified evidence, and prefer an allowed model different from yours.
 - Fix what critics confirm, then report which findings were verified and which
   were dismissed, and why.
+
+## Subagents lifecycle and reuse
+
+- Background subagents (`run_in_background: true`, default) persist in status
+  `inactive` when finished. Reuse them via `send_message(agent_id, ...)` for
+  follow-up steps (e.g. audit → edit) to keep the file cache hot and avoid
+  re-reading files from scratch.
+- Foreground subagents (`run_in_background: false`) are one-shot and disposed
+  on return; they cannot be continued.
