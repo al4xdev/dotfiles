@@ -16,14 +16,16 @@ from contextlib import contextmanager
 from pathlib import Path
 
 UNIT = "gen.service"
-TEXT_PROFILES = ("gm", "qw")
+TEXT_PROFILES = ("gm", "qw", "qw2")
 # Both local models run on NInfer now, one at a time through gen.service: qw is
-# the 27B ternary Bonsai (262144 tokens) and gm the Gemma 4 26B-A4B MoE with its
-# experts in pinned host RAM (also 262144 after the rk4v4 KV switch). The llama.cpp
+# the 27B ternary Bonsai (262144 tokens), gm the Gemma 4 26B-A4B MoE with its
+# experts in pinned host RAM (also 262144 after the rk4v4 KV switch), and qw2 the
+# Qwen3.6-35B-A3B MoE with host experts (65536 tokens, rk4v4 KV). The llama.cpp
 # profiles were retired with the models they loaded.
 ORIGINAL = {
     "gm": Path("/home/alex/Applications/ninfer-all/run-gemma4-ninfer.fish"),
     "qw": Path("/home/alex/Applications/ninfer-all/run-bonsai2-ninfer.fish"),
+    "qw2": Path("/home/alex/Applications/ninfer-all/run-qwen35b-ninfer.fish"),
 }
 LAUNCHERS = {
     "image": Path("/home/alex/.config/my_scripts/start.sh"),

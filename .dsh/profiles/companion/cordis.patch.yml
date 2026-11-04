@@ -14,7 +14,6 @@
   config:
     provider: google-antigravity
     model: gemini-3.8-flash-low
-    reasoningEffort: low
 # Pure API model: no harness identity or persona lines in the system prompt (the
 # companion preset has no persona row of its own, so these root keys are the only
 # source); anything the owner wants goes visibly in AGENTS-Companion.md.

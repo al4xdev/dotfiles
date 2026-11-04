@@ -23,6 +23,17 @@
       # -medium and -low (plugins/dsh-antigravity/src/models.ts).
       - provider: google-antigravity
         model: gemini-4-argon-high
+      # Gemini 3.8 Flash. Effort is the model id, not a separate reasoning field
+      # (plugins/dsh-antigravity/src/models.ts).
+      - provider: google-antigravity
+        model: gemini-3.8-flash-high
+      - provider: google-antigravity
+        model: gemini-3.8-flash-medium
+      - provider: google-antigravity
+        model: gemini-3.8-flash-low
+      # xAI Grok. Catalog id of the signed-in `xai` route; matches ~/.dsh-tui/model.json.
+      - provider: xai
+        model: grok-4.7
 # Long-lived Codex agents: bounded provider retry, last wait18–20min with jitter.
 # 190k is the pressure ceiling for this 272k model; safety reserves may trigger earlier.
 - id: compaction-basic
@@ -160,7 +171,7 @@
     - id: alex-grammar-fix
       name: ../../../git/my/dsh-customs/plugins/grammar-fix/index.mjs
       config:
-        model: deepseek-official/deepseek-flash
+        model: strata-local/gemma4-26b-a4b
         language: en
         naturalTips: false
     - id: alex-managed-plans

@@ -106,7 +106,8 @@
 .claude/settings.json
 .claude/history.jsonl
 .config/my_scripts/.keyring-unlock.log
-.config/my_scripts/__pycache__/
+**/__pycache__/
+*.pyc
 .config/my_scripts/.claude/
 .dsh/.credentials.yaml
 .dsh/dsh-auth/credentials.json

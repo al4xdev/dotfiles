@@ -12,9 +12,10 @@ NINFER = Path("/home/alex/Applications/ninfer-all")
 
 class LauncherTests(unittest.TestCase):
     def test_registry_maps_both_profiles_to_ninfer(self):
-        self.assertEqual(set(gen.LAUNCHERS), {"image", "video", "qw", "gm"})
+        self.assertEqual(set(gen.LAUNCHERS), {"image", "video", "qw", "gm", "qw2"})
         self.assertEqual(gen.LAUNCHERS["qw"], NINFER / "run-bonsai2-ninfer.fish")
         self.assertEqual(gen.LAUNCHERS["gm"], NINFER / "run-gemma4-ninfer.fish")
+        self.assertEqual(gen.LAUNCHERS["qw2"], NINFER / "run-qwen35b-ninfer.fish")
         # Every text profile is an original external launcher: there is no launchers/
         # file to reconstruct and no llama.cpp profile left to keep in sync.
         self.assertEqual(set(gen.TEXT_PROFILES), set(gen.ORIGINAL))
