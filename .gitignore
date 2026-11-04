@@ -18,9 +18,11 @@
 !/.config/fish/conf.d/
 !/.config/fish/conf.d/**
 
-## Micro specific rules (Everything except buffers)
+## Micro specific rules (Everything except buffers and backups)
 !/.config/micro/
+!/.config/micro/**
 .config/micro/buffers/
+.config/micro/backups/
 
 
 ## Kitty specific rules (Everything)
