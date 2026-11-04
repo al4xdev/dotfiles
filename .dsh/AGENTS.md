@@ -13,64 +13,46 @@ inspect, `edit`/`write`/`apply_patch` to change, `trash` to remove,
 `clipboard_copy` to hand something back. Keep `bash` for what only a shell can
 do — builds, tests, `git`, processes, ports.
 
-When locating a known symbol, function, or error message, always `grep` first to find
-the line number. Then inspect with `read` starting at or slightly before that line,
-using a bounded `limit` (50–100 lines) that covers the entire enclosing block.
-If the block is cut off, read forward to its end — never edit code blind.
+Process JSON with `jq`, not ad-hoc Python (`python -c`, heredoc scripts).
 
-Reserve full-file reads for small files (<200 lines), whole-file edits, or architectural
-reviews (imports, types, structural wiring). Avoid reading large files from line 1
-just to locate a symbol. If grep returns no matches, verify spelling or explore with
-`list`/`glob` before concluding code is absent.
+Give each call one operation, so the transcript reads as a sequence of
+decisions with discrete points to revert. Anything destructive gets its own
+call and its own approval.
 
-Give each call one operation. A script that does a dozen things at once is not
-faster, it is opaque: the transcript shows a wall of text instead of a sequence
-of decisions, and there is no discrete point to revert. Anything destructive
-gets its own call and its own approval.
-
-`bash` runs `bash -c`, not the user's interactive shell. Write anything the user
-will paste into their own terminal in their shell's syntax. Use the machine's
-own conventions for Python workflow and locations. If machine context is missing
-in a legacy instance, inspect the environment instead of inventing facts.
+`bash` runs `bash -c`, not the user's interactive shell. Write anything the
+user will paste into their own terminal in their shell's syntax.
 
 Package directories under `~/.dsh/profiles` are symlinks into the npx install.
-`grep` and `glob` do not follow symlinks, so an empty result in that tree means
-"not looked", not "absent" — resolve the real path before concluding.
+`grep` and `glob` do not follow symlinks, so an empty result there means
+"not looked", not "absent" — resolve the real path first.
 
-## Ephemeral dumps (`.dumps/`)
+## Ephemeral dumps
 
-Ephemeral scratch, curl replays, transcripts, and temporary reports belong in
-`.dumps/` (e.g. `.dumps/tasks/`), which must be gitignored and local only.
+Scratch, curl replays, transcripts, and temporary reports go in `.dumps/`
+(e.g. `.dumps/tasks/`), gitignored and local only.
 
-## Plan mode and goals
+## Goals and plans
 
-- Anchor multi-step tasks in a goal: use `get_goal`, then `create_goal` if none
-  is active. Reuse the current goal; resume it with `update_goal` when the user
-  asks to continue. A single-turn question needs no goal.
-- Native plan mode is off in this profile. When the user asks for a plan, write
-  it as a managed `.plan` artifact with `plan_stage`; only approved tasks
-  authorize execution.
-- Use the actual tools, not code blocks pretending to call them. Keep work
-  focused on the goal and mark it complete only after verifying the requested
-  result.
+- Anchor multi-step tasks in a goal: `get_goal`, then `create_goal` if none is
+  active; resume with `update_goal` when the user asks to continue. A
+  single-turn question needs no goal.
+- When the user asks for a plan, write it with `plan_stage`.
 
-## Critics and autonomy
+## Autonomy and critics
 
 - Don't stop to ask what you can measure: inspect, run or test it. Reserve
-  questions for decisions that are actually the user's.
-- When confidence in a result is low, or a change is risky (shared code,
-  persistence formats, security, migrations), spawn independent critic
-  subagents with `subagent` to attack it before reporting. Give each one the
-  concrete material (diff, files, commands) and one focused question, ask for
-  verified evidence, and prefer an allowed model different from yours.
-- Fix what critics confirm, then report which findings were verified and which
-  were dismissed, and why.
+  questions for decisions that are actually the user's. Mark work complete
+  only after verifying the result.
+- When confidence is low or a change is risky (shared code, persistence
+  formats, security, migrations), spawn independent critic subagents to attack
+  it before reporting. Give each one the concrete material and one focused
+  question, ask for verified evidence, and prefer a model different from
+  yours. Report which findings were verified and which were dismissed, and why.
 
-## Subagents lifecycle and reuse
+## Subagents
 
-- Background subagents (`run_in_background: true`, default) persist in status
-  `inactive` when finished. Reuse them via `send_message(agent_id, ...)` for
-  follow-up steps (e.g. audit → edit) to keep the file cache hot and avoid
-  re-reading files from scratch.
-- Foreground subagents (`run_in_background: false`) are one-shot and disposed
-  on return; they cannot be continued.
+- Always run `subagent` in the background (the default) and never set
+  `run_in_background: false`: foreground runs are one-shot and cannot be
+  continued. Continue a finished subagent with `send_message` for follow-up
+  steps (audit → edit). When you need its result before acting, `wait` for
+  the notification instead of guessing or duplicating its work.
