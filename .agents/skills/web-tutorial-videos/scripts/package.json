@@ -1,0 +1,17 @@
+{
+  "name": "web-tutorial-videos",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Gravador de vídeos tutoriais de aplicações web: Playwright + screencast CDP, legendas ASS, trilha procedural, ffmpeg.",
+  "type": "module",
+  "scripts": {
+    "setup": "npx playwright install chromium",
+    "dry": "node recorder.mjs --dry",
+    "record-all": "bash record-all.sh",
+    "probe": "bash probe-all.sh",
+    "index": "node make-index.mjs"
+  },
+  "dependencies": {
+    "playwright": "^1.64.1"
+  }
+}

@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Demonstração — Pedidos</title>
+<style>
+  :root { --acc: #6b21a8; --bg: #f6f3ee; --txt: #241a33; --bd: #ddd3e8; }
+  * { box-sizing: border-box; }
+  body { margin: 0; font: 15px/1.5 'Noto Sans', system-ui, sans-serif; background: var(--bg); color: var(--txt); }
+  header { background: #fff; border-bottom: 1px solid var(--bd); padding: 14px 32px; font-weight: 700; color: var(--acc); font-size: 20px; }
+  main { max-width: 760px; margin: 28px auto; padding: 0 24px; }
+  .tip { background: #eef4ff; border: 1px solid #c9dafb; border-radius: 8px; padding: 10px 14px; display: flex; gap: 10px; align-items: center; }
+  .tip button { margin-left: auto; border: 0; background: none; font-size: 18px; cursor: pointer; }
+  .card { background: #fff; border: 1px solid var(--bd); border-radius: 12px; padding: 22px; margin-top: 20px; }
+  h1 { font-size: 24px; margin: 0 0 4px; } .hint { color: #6b6177; font-size: 13px; }
+  label { display: block; font-weight: 600; margin-top: 14px; }
+  input[type=text], input[type=date] { width: 100%; padding: 9px 10px; border: 1px solid var(--bd); border-radius: 8px; font: inherit; }
+  .actions { margin-top: 20px; display: flex; justify-content: flex-end; }
+  .btn { background: var(--acc); color: #fff; border: 0; border-radius: 8px; padding: 9px 18px; font: 600 15px inherit; cursor: pointer; }
+  .btn.ghost { background: none; color: var(--acc); border: 1px solid var(--bd); }
+  .backdrop { position: fixed; inset: 0; background: rgba(20,10,30,.45); display: none; align-items: center; justify-content: center; }
+  .backdrop.open { display: flex; }
+  .dialog { background: #fff; border-radius: 12px; padding: 22px 24px; width: 420px; }
+  .dialog-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 18px; }
+  .ok { display: none; margin-top: 20px; background: #ecfdf3; border: 1px solid #abefc6; border-radius: 8px; padding: 12px 14px; }
+  .ok.show { display: block; }
+</style>
+</head>
+<body>
+<header>Pedidos · demonstração</header>
+<main>
+  <div class="tip" id="tip"><span>💡 <strong>Dica:</strong> <span id="tip-text"></span></span>
+    <button type="button" aria-label="Fechar a dica" onclick="tip.remove()">×</button></div>
+
+  <section class="card">
+    <h1>Novo pedido</h1>
+    <p class="hint">Preencha os campos e envie. Nada sai desta página.</p>
+    <label for="title">Título do pedido</label>
+    <input id="title" type="text" placeholder="Ex.: Material de escritório">
+    <label for="due">Data de entrega</label>
+    <input id="due" type="date">
+    <span class="hint">Dia, mês e ano (dd/mm/aaaa).</span>
+    <label for="attachment">Anexo</label>
+    <input id="attachment" type="file" aria-label="Anexo do pedido">
+    <span class="hint" id="attached"></span>
+    <div class="actions"><button type="button" class="btn" id="send">Enviar pedido</button></div>
+  </section>
+
+  <div class="ok" id="ok" role="status"></div>
+</main>
+
+<div class="backdrop" id="confirm" role="dialog" aria-modal="true" aria-labelledby="confirm-title">
+  <div class="dialog">
+    <strong id="confirm-title">Enviar pedido?</strong>
+    <p class="hint">Depois de enviado, o pedido não pode ser editado.</p>
+    <div class="dialog-actions confirm-actions">
+      <button type="button" class="btn ghost" id="cancel">Voltar</button>
+      <button type="button" class="btn" id="do-send">Enviar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Dica sorteada — o fluxo de exemplo fixa Math.random para a legenda saber qual aparece.
+  const TIPS = ['a data de entrega usa o calendário do navegador.',
+                'o anexo é opcional e pode ser qualquer arquivo.',
+                'você confirma antes de enviar: o pedido não volta para edição.'];
+  document.getElementById('tip-text').textContent = TIPS[Math.floor(Math.random() * TIPS.length)];
+  const $ = (id) => document.getElementById(id);
+  $('attachment').addEventListener('change', (e) => {
+    const f = e.target.files[0];
+    $('attached').textContent = f ? `Anexado: ${f.name} (${f.size} bytes)` : '';
+  });
+  $('send').onclick = () => $('confirm').classList.add('open');
+  $('cancel').onclick = () => $('confirm').classList.remove('open');
+  // Fecha com atraso, como uma chamada ao servidor: é o caso em que o clique "se perde" se o
+  // fluxo não esperar o diálogo fechar.
+  $('do-send').onclick = () => setTimeout(() => {
+    $('confirm').classList.remove('open');
+    const due = $('due').value ? $('due').value.split('-').reverse().join('/') : 'sem data';
+    $('ok').textContent = `Pedido "${$('title').value}" enviado. Entrega em ${due}.`;
+    $('ok').classList.add('show');
+  }, 700);
+</script>
+</body>
+</html>

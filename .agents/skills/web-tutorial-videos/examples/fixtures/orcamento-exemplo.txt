@@ -1,0 +1,3 @@
+Orçamento de exemplo — arquivo usado no upload do fluxo exemplo-pedido.
+Item: resma de papel A4 · 10 unidades
+Item: caneta azul · 50 unidades
