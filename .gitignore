@@ -83,6 +83,14 @@
 !/.dsh/profiles/*/standard-managed-plugins.yml
 !/.dsh/profiles/*/alex-research-*.yml
 
+## dsh-tui: only the theme choice and custom themes (history, sessions and prefs stay local)
+!/.dsh-tui/
+/.dsh-tui/*
+!/.dsh-tui/theme.json
+!/.dsh-tui/themes/
+/.dsh-tui/themes/*
+!/.dsh-tui/themes/*.json
+
 ## Personal scripts
 !/.config/my_scripts/
 !/.config/my_scripts/**

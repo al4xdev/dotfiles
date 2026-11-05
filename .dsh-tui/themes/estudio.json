@@ -1,0 +1,8 @@
+{
+  "name": "estudio",
+  "displayName": "Estúdio",
+  "base": "dark",
+  "colors": {
+    "userPromptLabel": "#C4977F"
+  }
+}
