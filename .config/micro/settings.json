@@ -5,8 +5,8 @@
     "lsp.formatOnSave": true,
     "lsp.ignoreMessages": "LS message1 to ignore|LS message 2 to ignore|...",
     "lsp.server": "pylsp",
-    "theme": "monokai",
-	"pluginrepos": [
-      "https://raw.githubusercontent.com/weebi/micro-preview/master/repo.json"
-  ]
+    "pluginrepos": [
+        "https://raw.githubusercontent.com/weebi/micro-preview/master/repo.json"
+    ],
+    "theme": "monokai"
 }
