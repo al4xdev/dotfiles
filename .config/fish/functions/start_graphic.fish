@@ -17,7 +17,7 @@ function start_graphic --description 'Seleciona console puro, Cage + Kitty ou CO
     if set -q _flag_help; or test -z "$mode"
         printf '%s\n' 'Uso: start_graphic [--tty | --cage | --cosmic]' \
             '  --tty     Para o SDDM, se ativo, e permanece no console.' \
-            '  --cage    Abre Kitty no Cage: DP-1 a 165 Hz, teclado US International AltGr.' \
+            '  --cage    Abre Kitty no Cage: DP-1 a 165 Hz, teclado US International.' \
             '  --cosmic  Abre COSMIC diretamente no TTY; ao sair, retorna ao console.' \
             'Execute os modos em um TTY local, fora do Cage/desktop e do SSH.' \
             'Nenhum modo altera quais serviços iniciam no boot.'
@@ -123,7 +123,7 @@ function start_graphic --description 'Seleciona console puro, Cage + Kitty ou CO
     set -lx XKB_DEFAULT_RULES evdev
     set -lx XKB_DEFAULT_MODEL pc105
     set -lx XKB_DEFAULT_LAYOUT us
-    set -lx XKB_DEFAULT_VARIANT altgr-intl
+    set -lx XKB_DEFAULT_VARIANT intl
     set -lx XKB_DEFAULT_OPTIONS lv3:ralt_switch
     printf '%s\n' 'Abrindo Cage + Kitty no DP-1 a 165 Hz. Fechar o último painel retorna ao TTY.'
     command env -u DISPLAY -u WAYLAND_DISPLAY cage -s -- fish --no-config "$session_script"

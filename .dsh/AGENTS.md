@@ -13,6 +13,8 @@ inspect, `edit`/`write`/`apply_patch` to change, `trash` to remove,
 `clipboard_copy` to hand something back. Keep `bash` for what only a shell can
 do — builds, tests, `git`, processes, ports.
 
+Read entire files by default; slice only when targeting exact known lines.
+
 Process JSON with `jq`, not ad-hoc Python (`python -c`, heredoc scripts).
 
 Give each call one operation, so the transcript reads as a sequence of
