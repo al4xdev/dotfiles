@@ -182,6 +182,8 @@
 # The `standard` preset is bash-first (2026-11-13). Frontier models (trained on Claude
 # Code) read, list and search through the shell, so tools that duplicate it only cost
 # prefix and steer against training. Against the stock composition:
+# - alex-bash-tools replaces tool-bash: the stock tool plus the frontier shell practice
+#   (bound output, batch probes with `;`, `&&` for dependent steps) in its description;
 # - alex-fs-tools replaces tool-fs: one `read` for text and images, no `read_image`, and
 #   no "not shell commands like cat" prose;
 # - no tool-fs-search (glob, grep): rg/find/ls in bash;
@@ -205,8 +207,8 @@
         name: '@deepseek-ai/dsh-agent-instructions'
         config:
           maxBytes: 65536
-      - id: tool-bash
-        name: '@deepseek-ai/dsh-tool-bash'
+      - id: alex-bash-tools
+        name: ../../../git/my/dsh-customs/plugins/bash-tools/index.mjs
         disabled: !!js process.platform === 'win32'
       - id: tool-pwsh
         name: '@deepseek-ai/dsh-tool-pwsh'
