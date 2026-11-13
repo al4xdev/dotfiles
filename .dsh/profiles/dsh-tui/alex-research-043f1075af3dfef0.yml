@@ -1,5 +1,0 @@
-# Managed research activation derivative; original scopes and expressions retained.
-- id: liangshen-plugins
-  name: "@deepseek-ai/cordis-plugin-include"
-  config:
-    path: ./alex-research-160ca8160216a13a.yml

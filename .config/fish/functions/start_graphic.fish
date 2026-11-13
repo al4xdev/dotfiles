@@ -110,6 +110,10 @@ function start_graphic --description 'Seleciona console puro, Cage + Kitty ou CO
         # Roda em primeiro plano no TTY de login; ao sair da sessão, a função retorna.
         # Remove variáveis herdadas de outro compositor, sem iniciar o SDDM.
         printf '%s\n' 'Abrindo COSMIC diretamente. Ao sair do desktop, você volta a este TTY.'
+        # O systemd --user sobrevive entre sessões e guardaria o DISPLAY/WAYLAND_DISPLAY
+        # antigos: o start-cosmic só atualiza variáveis que existem no ambiente dele,
+        # e o `env -u` abaixo as deixa vazias.
+        command systemctl --user unset-environment DISPLAY WAYLAND_DISPLAY XDG_SESSION_DESKTOP 2>/dev/null
         command env -u DISPLAY -u WAYLAND_DISPLAY -u XDG_CURRENT_DESKTOP -u XDG_SESSION_DESKTOP \
             XDG_SESSION_TYPE=wayland start-cosmic
         set -l cosmic_status $status
