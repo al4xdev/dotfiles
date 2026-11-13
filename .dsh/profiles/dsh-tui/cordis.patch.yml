@@ -26,11 +26,11 @@
       # Gemini 3.8 Flash. Effort is the model id, not a separate reasoning field
       # (plugins/dsh-antigravity/src/models.ts).
       - provider: google-antigravity
-        model: gemini-3.8-flash-high
+        model: gemini-4-hydrogen-high
       - provider: google-antigravity
-        model: gemini-3.8-flash-medium
+        model: gemini-4-hydrogen-medium
       - provider: google-antigravity
-        model: gemini-3.8-flash-low
+        model: gemini-4-hydrogen-low
       # xAI Grok. Catalog id of the signed-in `xai` route; matches ~/.dsh-tui/model.json.
       - provider: xai
         model: grok-4.7
@@ -61,7 +61,7 @@
 - id: llm-pi-ai-antigravity
   config:
     webSearch: true
-    searchModel: gemini-3.8-flash-low
+    searchModel: gemini-4-hydrogen-low
     quotaResetRetry:
       enabled: true
       maxWaitMs: 86400000

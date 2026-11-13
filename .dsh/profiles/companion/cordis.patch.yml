@@ -13,7 +13,7 @@
 - id: agent-default-model
   config:
     provider: google-antigravity
-    model: gemini-3.8-flash-low
+    model: gemini-4-hydrogen-low
 # Pure API model: no harness identity or persona lines in the system prompt (the
 # companion preset has no persona row of its own, so these root keys are the only
 # source); anything the owner wants goes visibly in AGENTS-Companion.md.
@@ -143,19 +143,19 @@
                       headroomTokens: 16384
                       maxTokens: 16384
                     - provider: google-antigravity
-                      model: gemini-3.8-flash-high
+                      model: gemini-4-hydrogen-high
                       headroomTokens: 16384
                       maxTokens: 16384
                       thresholdRatio: 0.8
                       retainRatio: 0.16
                     - provider: google-antigravity
-                      model: gemini-3.8-flash-medium
+                      model: gemini-4-hydrogen-medium
                       headroomTokens: 16384
                       maxTokens: 16384
                       thresholdRatio: 0.8
                       retainRatio: 0.16
                     - provider: google-antigravity
-                      model: gemini-3.8-flash-low
+                      model: gemini-4-hydrogen-low
                       headroomTokens: 16384
                       maxTokens: 16384
                       thresholdRatio: 0.8
