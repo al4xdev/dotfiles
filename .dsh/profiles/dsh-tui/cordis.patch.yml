@@ -142,8 +142,6 @@
       name: ../../../git/my/dsh-customs/plugins/session/bridge.mjs
     - id: alex-file-observation-coverage
       name: ../../../git/my/dsh-customs/plugins/apply-patch/observation.mjs
-    - id: alex-apply-patch
-      name: ../../../git/my/dsh-customs/plugins/apply-patch/index.mjs
     - id: alex-workspace-context
       name: ../../../git/my/dsh-customs/plugins/workspace-context/index.mjs
     - id: alex-project-mcp
@@ -162,13 +160,6 @@
       name: ../../../git/my/dsh-customs/plugins/wait/index.mjs
     - id: alex-peak-gate
       name: ../../../git/my/dsh-customs/plugins/peak-gate/index.mjs
-    - id: alex-list
-      name: ../../../git/my/dsh-customs/plugins/list/index.mjs
-    - id: alex-shell-reconsider
-      name: ../../../git/my/dsh-customs/plugins/shell-reconsider/index.mjs
-      config:
-        interval: 50
-        unit: steps
     - id: alex-grammar-fix
       name: ../../../git/my/dsh-customs/plugins/grammar-fix/index.mjs
       config:
@@ -544,3 +535,106 @@
           path: ./alex-research-043f1075af3dfef0.yml
 
 # END alex-research activation v1
+# The `standard` preset is bash-first (2026-11-13). Frontier models (trained on Claude
+# Code) read, list and search through the shell, so tools that duplicate it only cost
+# prefix and steer against training. Against the stock composition:
+# - alex-fs-tools replaces tool-fs: one `read` for text and images, no `read_image`, and
+#   no "not shell commands like cat" prose;
+# - no tool-fs-search (glob, grep): rg/find/ls in bash;
+# - alex-tool-result-clearing replaces tool-result-pruner: old tool output leaves the
+#   prompt when the cache is already cold or under pressure, before any summary;
+# - no subagent_fork and no workflow (0 and 6 calls in 200 sessions).
+# This patch comes after the research block on purpose: the stock list lives in a frozen
+# research derivative (alex-research-a2d9…), and the last config patch wins. Deleting this
+# entry restores the stock composition.
+- id: preset-standard
+  name: "@deepseek-ai/dsh-agent-preset"
+  config:
+    id: standard
+    order: 1
+    plugins:
+      - id: persona
+        name: '@deepseek-ai/dsh-persona'
+        config:
+          prefix: ''
+      - id: agent-instructions
+        name: '@deepseek-ai/dsh-agent-instructions'
+        config:
+          maxBytes: 65536
+      - id: tool-bash
+        name: '@deepseek-ai/dsh-tool-bash'
+        disabled: !!js process.platform === 'win32'
+      - id: tool-pwsh
+        name: '@deepseek-ai/dsh-tool-pwsh'
+        disabled: !!js process.platform !== 'win32'
+      - id: alex-fs-tools
+        name: ../../../git/my/dsh-customs/plugins/fs-tools/index.mjs
+      - id: tool-jobs
+        name: '@deepseek-ai/dsh-tool-jobs'
+      - id: skill-filesystem
+        name: '@deepseek-ai/dsh-skill-filesystem'
+      - id: tool-skill
+        name: '@deepseek-ai/dsh-tool-skill'
+      - id: command-goal
+        name: '@deepseek-ai/dsh-command-goal'
+      - id: tool-goal
+        name: '@deepseek-ai/dsh-tool-goal'
+      - id: compaction
+        name: cordis:group
+        group: true
+        isolate:
+          compaction: true
+          toolResultPruner: true
+        config:
+          - id: compaction-basic
+            name: '@deepseek-ai/dsh-compaction-basic'
+          - id: command-compact
+            name: '@deepseek-ai/dsh-command-compact'
+          - id: alex-tool-result-clearing
+            name: ../../../git/my/dsh-customs/plugins/tool-result-clearing/index.mjs
+            config:
+              thresholdChars: 8192
+              headChars: 4096
+              tailChars: 1024
+              keepRecent: 12
+              clearAtLeastTokens: 20000
+              idleSeconds: 3900
+      - id: delegation
+        name: cordis:group
+        group: true
+        isolate:
+          workflowEngine: true
+        config:
+          - id: tool-subagent-control
+            name: '@deepseek-ai/dsh-tool-subagent-control'
+          - id: tool-subagent-list-agents
+            name: '@deepseek-ai/dsh-tool-subagent-control/list-agents'
+          - id: tool-subagent
+            name: '@deepseek-ai/dsh-tool-subagent'
+            config:
+              provider: spawn
+              toolName: subagent
+              modelSelectionSettings: true
+              backgroundMode: continuable
+      - id: tool-ask-user
+        name: '@deepseek-ai/dsh-tool-ask-user'
+      - id: tool-todo
+        name: '@deepseek-ai/dsh-tool-todo'
+        config:
+          allowParallelInProgress: true
+      - id: tool-web
+        name: '@deepseek-ai/dsh-tool-web'
+        config:
+          fetch: true
+          searchTimeoutMs: 60000
+          search: false
+      - id: present
+        name: '@deepseek-ai/dsh-tool-present'
+# Never used: all 539 sessions on 2026-11-13 ran `standard`. Off, so the preset picker
+# shows one choice; delete a row to bring that preset back.
+- id: preset-ptc
+  disabled: true
+- id: preset-cordis
+  disabled: true
+- id: preset-liangshen
+  disabled: true

@@ -8,25 +8,21 @@ you touch and preserve useful existing comments.
 
 ## Execution conventions
 
-Prefer the native tool over the shell: `read`, `list`, `glob` and `grep` to
-inspect, `edit`/`write`/`apply_patch` to change, `trash` to remove,
-`clipboard_copy` to hand something back. Keep `bash` for what only a shell can
-do — builds, tests, `git`, processes, ports.
+The shell is the normal way to look at things: `rg`, `find`, `ls`, `sed -n`, `git`.
+Bound what you print (`| head`, a line range) instead of dumping whole files. Use
+`read` to view an image, or a whole file when you want numbered lines.
 
-Read entire files by default; slice only when targeting exact known lines.
+Change files with `edit`/`write`, so the change shows as a diff; a script is fine for a
+mechanical rewrite across many files.
 
-Process JSON with `jq`, not ad-hoc Python (`python -c`, heredoc scripts).
+Process JSON with `jq`, not ad-hoc Python.
 
-Give each call one operation, so the transcript reads as a sequence of
-decisions with discrete points to revert. Anything destructive gets its own
-call and its own approval.
+`bash` runs `bash -c`, not the user's interactive shell. Write anything the user will
+paste into their own terminal in their shell's syntax.
 
-`bash` runs `bash -c`, not the user's interactive shell. Write anything the
-user will paste into their own terminal in their shell's syntax.
-
-Package directories under `~/.dsh/profiles` are symlinks into the npx install.
-`grep` and `glob` do not follow symlinks, so an empty result there means
-"not looked", not "absent" — resolve the real path first.
+Package directories under `~/.dsh/profiles` are symlinks into the npx install. `rg` and
+`find` do not follow symlinks by default (`rg -L`, `find -L`), so an empty result there
+means "not looked", not "absent".
 
 ## Ephemeral dumps
 
