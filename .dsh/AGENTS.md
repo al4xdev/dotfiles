@@ -8,14 +8,24 @@ you touch and preserve useful existing comments.
 
 ## Execution conventions
 
-The shell is the normal way to look at things: `rg`, `find`, `ls`, `sed -n`, `git`.
-Bound what you print (`| head`, a line range) instead of dumping whole files. Use
-`read` to view an image, or a whole file when you want numbered lines.
+The shell is the normal way to look at things: `rg`/`grep -rn`, `find`, `ls`, `sed -n`,
+`git`.
 
-Change files with `edit`/`write`, so the change shows as a diff; a script is fine for a
-mechanical rewrite across many files.
-
-Process JSON with `jq`, not ad-hoc Python.
+- Bound every output at the source: `| head -40`, `sed -n 120,180p f`, `grep -m 20`, and
+  `2>&1 | tail -30` for builds and tests. Check `wc -l` before printing a file of unknown
+  size: an unbounded dump stays in the context for the rest of the session.
+- Batch independent looks into one call, separated by `;` (grep a symbol, slice two
+  files, list a directory): a probe that finds nothing exits 1 and must not stop the
+  others. Use `&&` only where a step needs the previous one (`build && test`).
+- Search with a path or glob filter (`rg -n pattern src -g '*.ts'`,
+  `grep -rn --include='*.c' pattern src`) and leave vendored and build directories out.
+- Issue independent tool calls together in one response, not one per step.
+- Use `read` to view an image, or a whole file when you want numbered lines.
+- Change files with `edit`/`write`, so the change shows as a diff; `edit` needs only an
+  exact, unique snippet. A script is fine for a mechanical rewrite across many files.
+- To analyse data (logs, binaries, images, JSON), write a short script and print the
+  result, not the data. Process JSON with `jq`.
+- Give long builds and test runs a timeout; start servers in the background.
 
 `bash` runs `bash -c`, not the user's interactive shell. Write anything the user will
 paste into their own terminal in their shell's syntax.
