@@ -52,5 +52,7 @@ Scratch, curl replays, transcripts, and temporary reports go in `.dumps/`
 - Always run `subagent` in the background (the default) and never set
   `run_in_background: false`: foreground runs are one-shot and cannot be
   continued. Continue a finished subagent with `send_message` for follow-up
-  steps (audit → edit). When you need its result before acting, `wait` for
-  the notification instead of guessing or duplicating its work.
+  steps (audit → edit). When you need its result before acting, call `wait`
+  with a generous duration: it returns as soon as the subagent reports (or the
+  user writes), so don't guess, poll or duplicate its work. Without a goal,
+  ending the turn works too: the report starts a new turn.
